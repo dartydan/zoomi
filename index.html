@@ -7,22 +7,22 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container">
-        <canvas id="webgl"></canvas>
-        <div class="content">
-            <h1>ZOOMI</h1>
-            <p>Innovative Sound. Timeless Music.</p>
-            <button class="enter-btn">Enter Site</button>
-        </div>
+    <div class="cursor"></div>
+    <div class="cursor-inner"></div>
+    <div class="content">
+        <h1>ZOOMI</h1>
+        <p>Innovative Sound. Timeless Music.</p>
     </div>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
-            }
-        }
+    <script>
+        const cursor = document.querySelector('.cursor');
+        const cursorInner = document.querySelector('.cursor-inner');
+        let rotation = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
+            cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+            rotation += 2; // Make the cursor rotate
+        });
     </script>
-    <script type="module" src="main.js"></script>
 </body>
 </html> 

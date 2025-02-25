@@ -2,25 +2,14 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    cursor: none; /* Hide the default cursor */
 }
 
 body {
     font-family: 'Arial', sans-serif;
     overflow: hidden;
-    background: #000;
-}
-
-#container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-}
-
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    background: linear-gradient(45deg, #2c1635 0%, #000000 100%);
+    min-height: 100vh;
 }
 
 .content {
@@ -55,21 +44,32 @@ p {
     margin-bottom: 2rem;
 }
 
-.enter-btn {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    background: transparent;
+/* Custom cursor styles */
+.cursor {
+    width: 20px;
+    height: 20px;
     border: 2px solid white;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.2s ease;
 }
 
-.enter-btn:hover {
-    background: white;
-    color: black;
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255,255,255,0.3);
+.cursor-inner {
+    width: 8px;
+    height: 8px;
+    background: #ff3366;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease;
+}
+
+/* Add hover effect for clickable elements */
+.enter-btn:hover ~ .cursor {
+    transform: scale(1.5);
 } 
