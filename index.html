@@ -42,24 +42,31 @@
         // Only run cursor animation on desktop
         if (window.innerWidth > 768) {
             document.addEventListener('mousemove', (e) => {
-                cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
-                cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
-                rotation += 2;
+                requestAnimationFrame(() => {
+                    cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
+                    cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+                    rotation += 2;
+                });
             });
         }
 
         // Handle mobile scroll indicator
-        const container = document.querySelector('.split-container');
         const indicator = document.querySelector('.swipe-indicator');
 
         if (window.innerWidth <= 768) {
-            container.addEventListener('scroll', () => {
-                if (container.scrollTop > 50) {
+            let lastScrollTop = 0;
+            
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > lastScrollTop) {
                     indicator.style.opacity = '0';
-                } else {
+                } else if (scrollTop < 50) {
                     indicator.style.opacity = '0.7';
                 }
-            });
+                
+                lastScrollTop = scrollTop;
+            }, { passive: true });
         }
     </script>
 </body>

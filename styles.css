@@ -121,28 +121,51 @@ p {
 
 /* Mobile styles */
 @media (max-width: 768px) {
+    body {
+        overflow: auto; /* Allow scrolling on body instead */
+        height: auto;
+    }
+
     .split-container {
         flex-direction: column;
-        height: 200vh; /* Double height for vertical scroll */
-        scroll-snap-type: y mandatory;
-        overflow-y: scroll;
+        height: auto;
+        overflow: visible;
+        position: relative;
+        -webkit-overflow-scrolling: touch; /* Smooth scroll for iOS */
     }
 
     .split {
         flex: none;
+        min-height: 100vh; /* Use min-height instead of height */
         height: 100vh;
         scroll-snap-align: start;
-        transition: transform 0.3s ease;
+        transition: none; /* Remove transition for better performance */
+        -webkit-transform: translate3d(0,0,0); /* Fix for Safari */
+        transform: translate3d(0,0,0);
     }
 
     .split:hover {
-        flex: none; /* Remove hover expansion */
+        flex: none;
+        transform: none;
+    }
+
+    .content {
+        transform: none; /* Remove transform for better performance */
+        transition: none;
+    }
+
+    .split:hover .content {
+        transform: none;
     }
 
     .main-logo {
         font-size: 3rem;
         position: fixed;
-        mix-blend-mode: difference; /* Makes logo visible on both backgrounds */
+        mix-blend-mode: difference;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
     }
 
     /* Hide custom cursor on mobile */
@@ -158,20 +181,32 @@ p {
         transform: translateX(-50%);
         color: white;
         opacity: 0.7;
-        animation: bounce 2s infinite;
         z-index: 4;
         pointer-events: none;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
     }
 
     @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0) translateX(-50%);
+        0%, 100% {
+            transform: translate(-50%, 0);
         }
-        40% {
-            transform: translateY(-20px) translateX(-50%);
+        50% {
+            transform: translate(-50%, -15px);
         }
-        60% {
-            transform: translateY(-10px) translateX(-50%);
+    }
+
+    @-webkit-keyframes bounce {
+        0%, 100% {
+            -webkit-transform: translate(-50%, 0);
         }
+        50% {
+            -webkit-transform: translate(-50%, -15px);
+        }
+    }
+
+    .swipe-indicator {
+        animation: bounce 2s infinite;
+        -webkit-animation: bounce 2s infinite;
     }
 } 
