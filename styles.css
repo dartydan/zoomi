@@ -8,25 +8,76 @@
 body {
     font-family: 'Arial', sans-serif;
     overflow: hidden;
-    background: linear-gradient(45deg, #2c1635 0%, #000000 100%);
     min-height: 100vh;
+    background: #000;
+}
+
+.split-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+.split {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: flex 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.split:hover {
+    flex: 1.5;
+}
+
+.creative {
+    background: linear-gradient(45deg, #2c1635 0%, #000000 100%);
+}
+
+.music {
+    background: linear-gradient(45deg, #000000 0%, #2c1635 100%);
 }
 
 .content {
-    position: relative;
-    z-index: 2;
     color: white;
     text-align: center;
-    padding-top: 40vh;
+    z-index: 2;
+    transition: transform 0.3s ease;
 }
 
-h1 {
-    font-size: 4rem;
+.split:hover .content {
+    transform: scale(1.1);
+}
+
+h2 {
+    font-size: 3rem;
     letter-spacing: 0.8rem;
     margin-bottom: 1rem;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(255,255,255,0.3);
+}
+
+p {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    letter-spacing: 0.2rem;
+}
+
+.main-logo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 4rem;
+    letter-spacing: 0.8rem;
+    font-weight: 900;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
     animation: glow 2s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 3;
 }
 
 @keyframes glow {
@@ -36,12 +87,6 @@ h1 {
     to {
         text-shadow: 0 0 30px rgba(255,255,255,0.5);
     }
-}
-
-p {
-    font-size: 1.2rem;
-    opacity: 0.8;
-    margin-bottom: 2rem;
 }
 
 /* Custom cursor styles */
@@ -69,7 +114,64 @@ p {
     transition: transform 0.1s ease;
 }
 
-/* Add hover effect for clickable elements */
-.enter-btn:hover ~ .cursor {
+/* Split hover effects */
+.split:hover ~ .cursor {
     transform: scale(1.5);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .split-container {
+        flex-direction: column;
+        height: 200vh; /* Double height for vertical scroll */
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+    }
+
+    .split {
+        flex: none;
+        height: 100vh;
+        scroll-snap-align: start;
+        transition: transform 0.3s ease;
+    }
+
+    .split:hover {
+        flex: none; /* Remove hover expansion */
+    }
+
+    .main-logo {
+        font-size: 3rem;
+        position: fixed;
+        mix-blend-mode: difference; /* Makes logo visible on both backgrounds */
+    }
+
+    /* Hide custom cursor on mobile */
+    .cursor, .cursor-inner {
+        display: none;
+    }
+
+    /* Add swipe indicator */
+    .swipe-indicator {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        opacity: 0.7;
+        animation: bounce 2s infinite;
+        z-index: 4;
+        pointer-events: none;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0) translateX(-50%);
+        }
+        40% {
+            transform: translateY(-20px) translateX(-50%);
+        }
+        60% {
+            transform: translateY(-10px) translateX(-50%);
+        }
+    }
 } 

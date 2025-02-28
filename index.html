@@ -3,26 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Label | Welcome</title>
+    <title>ZOOMI | Creative & Music</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="cursor"></div>
     <div class="cursor-inner"></div>
-    <div class="content">
-        <h1>ZOOMI</h1>
-        <p>Innovative Sound. Timeless Music.</p>
+    
+    <div class="split-container">
+        <section class="split creative">
+            <div class="content">
+                <h2>CREATIVE</h2>
+                <p>Marketing & Web Design</p>
+            </div>
+        </section>
+        
+        <section class="split music">
+            <div class="content">
+                <h2>MUSIC</h2>
+                <p>Record Label & Production</p>
+            </div>
+        </section>
     </div>
+
+    <h1 class="main-logo">ZOOMI</h1>
+    
+    <!-- Mobile swipe indicator -->
+    <div class="swipe-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+
     <script>
         const cursor = document.querySelector('.cursor');
         const cursorInner = document.querySelector('.cursor-inner');
         let rotation = 0;
 
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
-            cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
-            rotation += 2; // Make the cursor rotate
-        });
+        // Only run cursor animation on desktop
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
+                cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+                rotation += 2;
+            });
+        }
+
+        // Handle mobile scroll indicator
+        const container = document.querySelector('.split-container');
+        const indicator = document.querySelector('.swipe-indicator');
+
+        if (window.innerWidth <= 768) {
+            container.addEventListener('scroll', () => {
+                if (container.scrollTop > 50) {
+                    indicator.style.opacity = '0';
+                } else {
+                    indicator.style.opacity = '0.7';
+                }
+            });
+        }
     </script>
 </body>
 </html> 
