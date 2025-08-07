@@ -2,7 +2,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    cursor: none; /* Hide the default cursor */
+    cursor: none !important; /* Hide the default cursor */
+}
+
+/* Ensure all interactive elements use custom cursor */
+a, button, .split, .content, .main-logo, .service-card, .tech-item, .nav-link, .submit-btn, .service-icon, .feature, .about-card, [onclick] {
+    cursor: none !important;
 }
 
 body {
@@ -26,6 +31,7 @@ body {
     transition: flex 0.5s ease;
     position: relative;
     overflow: hidden;
+    cursor: none !important;
 }
 
 .split:hover {
@@ -45,6 +51,7 @@ body {
     text-align: center;
     z-index: 2;
     transition: transform 0.3s ease;
+    cursor: none !important;
 }
 
 .split:hover .content {
@@ -66,57 +73,34 @@ p {
 }
 
 .main-logo {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 4rem;
-    letter-spacing: 0.8rem;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    color: transparent;
+    font-size: 1px;
     font-weight: 900;
-    text-shadow: 0 0 20px rgba(255,255,255,0.3);
-    animation: glow 2s ease-in-out infinite alternate;
     pointer-events: none;
-    z-index: 3;
+    z-index: -1;
+    text-align: center;
+    white-space: nowrap;
+    font-family: 'Arial', sans-serif;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    height: auto;
+    display: block;
+    opacity: 0;
+    visibility: hidden;
 }
 
 @keyframes glow {
     from {
-        text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.1);
     }
     to {
-        text-shadow: 0 0 30px rgba(255,255,255,0.5);
+        text-shadow: 0 0 30px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.2);
     }
-}
-
-/* Custom cursor styles */
-.cursor {
-    width: 20px;
-    height: 20px;
-    border: 2px solid white;
-    border-radius: 50%;
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: difference;
-    transition: transform 0.2s ease;
-}
-
-.cursor-inner {
-    width: 8px;
-    height: 8px;
-    background: #ff3366;
-    border-radius: 50%;
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: difference;
-    transition: transform 0.1s ease;
-}
-
-/* Split hover effects */
-.split:hover ~ .cursor {
-    transform: scale(1.5);
 }
 
 /* Mobile styles */
@@ -159,18 +143,31 @@ p {
     }
 
     .main-logo {
-        font-size: 3rem;
-        position: fixed;
-        mix-blend-mode: difference;
-        -webkit-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+        color: transparent;
+        font-size: 1px;
+        font-weight: 900;
+        pointer-events: none;
+        z-index: -1;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        visibility: hidden;
     }
 
     /* Hide custom cursor on mobile */
-    .cursor, .cursor-inner {
+    #css-cursor {
         display: none;
+    }
+
+    /* Restore cursor on mobile */
+    * {
+        cursor: auto;
     }
 
     /* Add swipe indicator */

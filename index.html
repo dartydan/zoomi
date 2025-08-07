@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MLPV725');</script>
+    <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZOOMI | Creative & Music</title>
@@ -8,14 +15,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="cursor"></div>
-    <div class="cursor-inner"></div>
-    
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MLPV725"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="split-container">
-        <section class="split creative">
+        <section class="split creative" onclick="window.location.href='marketing.html'">
             <div class="content">
-                <h2>CREATIVE</h2>
-                <p>Marketing & Web Design</p>
+                <h2>MARKETING</h2>
+                <p>Creative & Digital</p>
             </div>
         </section>
         
@@ -34,22 +42,8 @@
         <i class="fas fa-chevron-down"></i>
     </div>
 
+    <script src="cursor.js"></script>
     <script>
-        const cursor = document.querySelector('.cursor');
-        const cursorInner = document.querySelector('.cursor-inner');
-        let rotation = 0;
-
-        // Only run cursor animation on desktop
-        if (window.innerWidth > 768) {
-            document.addEventListener('mousemove', (e) => {
-                requestAnimationFrame(() => {
-                    cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px) rotate(${rotation}deg)`;
-                    cursorInner.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
-                    rotation += 2;
-                });
-            });
-        }
-
         // Handle mobile scroll indicator
         const indicator = document.querySelector('.swipe-indicator');
 
@@ -68,6 +62,18 @@
                 lastScrollTop = scrollTop;
             }, { passive: true });
         }
+
+        // Add click functionality for creative section
+        const creativeSection = document.querySelector('.creative');
+        
+        // Add hover effect for creative section
+        creativeSection.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+        });
+        
+        creativeSection.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
     </script>
 </body>
 </html> 
