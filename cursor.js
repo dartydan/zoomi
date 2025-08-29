@@ -146,12 +146,22 @@ class Cursor3D {
     addEventListeners() {
         // Mouse move with throttling for better performance
         let ticking = false;
+        let lastX = 0;
+        let lastY = 0;
+        
         document.addEventListener('mousemove', (e) => {
             if (!ticking) {
                 requestAnimationFrame(() => {
                     if (this.cursor) {
-                        this.cursor.style.left = e.clientX - 10 + 'px';
-                        this.cursor.style.top = e.clientY - 10 + 'px';
+                        // Only update if position changed significantly
+                        const newX = e.clientX - 10;
+                        const newY = e.clientY - 10;
+                        
+                        if (Math.abs(newX - lastX) > 1 || Math.abs(newY - lastY) > 1) {
+                            this.cursor.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+                            lastX = newX;
+                            lastY = newY;
+                        }
                     }
                     ticking = false;
                 });

@@ -11,9 +11,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZOOMI | Digital Marketing Agency - SEO & AI Optimization</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="marketing.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <link rel="preload" href="marketing.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="marketing.css"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -166,11 +171,11 @@
 
     <section id="contact" class="contact">
         <div class="container">
-            <h2 class="section-title">Get Started Today</h2>
+            <h2 class="section-title">Get Your Free On-Page Audit Demo</h2>
             <div class="contact-content">
                 <div class="contact-info">
-                    <h3>Ready to Transform Your Digital Presence?</h3>
-                    <p>Let's discuss how our AI-powered marketing solutions can help your business grow.</p>
+                    <h3>Discover What's Holding Your Website Back</h3>
+                    <p>Get a comprehensive on-page audit demo that reveals optimization opportunities and performance gaps in your digital presence.</p>
                     <div class="contact-details">
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
@@ -186,20 +191,14 @@
                         </div>
                     </div>
                 </div>
-                <form class="contact-form">
+                <form class="contact-form" id="auditForm">
                     <div class="form-group">
-                        <input type="text" placeholder="Your Name" required>
+                        <input type="email" id="email" name="email" placeholder="Your Email Address" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Your Email" required>
+                        <input type="url" id="url" name="url" placeholder="Website URL to Audit" required>
                     </div>
-                    <div class="form-group">
-                        <input type="text" placeholder="Company Name">
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Tell us about your project" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Get Free Consultation</button>
+                    <button type="submit" class="submit-btn">Get On-Page Audit Demo</button>
                 </form>
             </div>
         </div>
@@ -246,7 +245,6 @@
         </div>
     </footer>
 
-    <script src="cursor.js"></script>
-    <script src="marketing.js"></script>
+    <script src="marketing.js" defer></script>
 </body>
 </html> 

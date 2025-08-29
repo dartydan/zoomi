@@ -107,37 +107,69 @@ document.addEventListener('DOMContentLoaded', function() {
         cardsObserver.observe(card);
     });
 
-    // Form submission handling
-    const contactForm = document.querySelector('.contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+    // Form submission handling for audit demo
+    const auditForm = document.getElementById('auditForm');
+    if (auditForm) {
+        auditForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Get form data
-            const formData = new FormData(this);
-            const name = this.querySelector('input[type="text"]').value;
-            const email = this.querySelector('input[type="email"]').value;
-            const company = this.querySelector('input[placeholder="Company Name"]').value;
-            const message = this.querySelector('textarea').value;
+            const email = this.querySelector('#email').value;
+            const url = this.querySelector('#url').value;
             
-            // Simple validation
-            if (!name || !email || !message) {
+            // Validation
+            if (!email || !url) {
                 showNotification('Please fill in all required fields.', 'error');
                 return;
             }
             
-            // Simulate form submission
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            // URL validation
+            try {
+                new URL(url);
+            } catch {
+                showNotification('Please enter a valid website URL.', 'error');
+                return;
+            }
+            
+            // Update button state
             const submitBtn = this.querySelector('.submit-btn');
             const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Sending...';
             submitBtn.disabled = true;
             
-            setTimeout(() => {
-                showNotification('Thank you! We\'ll get back to you soon.', 'success');
-                this.reset();
+            try {
+                // Send data to webhook via GET with query parameters
+                const webhookUrl = `https://danzoomi.app.n8n.cloud/webhook/ba96e36a-328b-4be6-80ee-ce990120742a?email=${encodeURIComponent(email)}&url=${encodeURIComponent(url)}`;
+                const response = await fetch(webhookUrl, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    showNotification('Thank you! Your audit demo request has been submitted successfully.', 'success');
+                    this.classList.add('success');
+                    this.reset();
+                    
+                    // Remove success class after animation
+                    setTimeout(() => {
+                        this.classList.remove('success');
+                    }, 600);
+                } else {
+                    throw new Error('Webhook request failed');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showNotification('Sorry, there was an error submitting your request. Please try again.', 'error');
+            } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-            }, 2000);
+            }
         });
     }
 

@@ -2,12 +2,11 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    cursor: none !important; /* Hide the default cursor */
 }
 
-/* Ensure all interactive elements use custom cursor */
-a, button, .split, .content, .main-logo, .service-card, .tech-item, .nav-link, .submit-btn, .service-icon, .feature, .about-card, [onclick] {
-    cursor: none !important;
+/* Performance optimizations */
+html {
+    scroll-behavior: smooth;
 }
 
 body {
@@ -15,7 +14,14 @@ body {
     overflow: hidden;
     min-height: 100vh;
     background: #000;
+    /* Optimize for performance */
+    will-change: auto;
+    transform: translateZ(0);
 }
+
+
+
+
 
 .split-container {
     display: flex;
@@ -31,7 +37,6 @@ body {
     transition: flex 0.5s ease;
     position: relative;
     overflow: hidden;
-    cursor: none !important;
 }
 
 .split:hover {
@@ -51,7 +56,6 @@ body {
     text-align: center;
     z-index: 2;
     transition: transform 0.3s ease;
-    cursor: none !important;
 }
 
 .split:hover .content {
@@ -160,15 +164,7 @@ p {
         visibility: hidden;
     }
 
-    /* Hide custom cursor on mobile */
-    #css-cursor {
-        display: none;
-    }
 
-    /* Restore cursor on mobile */
-    * {
-        cursor: auto;
-    }
 
     /* Add swipe indicator */
     .swipe-indicator {

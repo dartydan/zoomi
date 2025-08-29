@@ -11,8 +11,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZOOMI | Creative & Music</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -42,37 +46,39 @@
         <i class="fas fa-chevron-down"></i>
     </div>
 
-    <script src="cursor.js"></script>
+    <script src="cursor.js" defer></script>
     <script>
         // Handle mobile scroll indicator
-        const indicator = document.querySelector('.swipe-indicator');
+        document.addEventListener('DOMContentLoaded', function() {
+            const indicator = document.querySelector('.swipe-indicator');
 
-        if (window.innerWidth <= 768) {
-            let lastScrollTop = 0;
+            if (window.innerWidth <= 768) {
+                let lastScrollTop = 0;
+                
+                window.addEventListener('scroll', () => {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    if (scrollTop > lastScrollTop) {
+                        indicator.style.opacity = '0';
+                    } else if (scrollTop < 50) {
+                        indicator.style.opacity = '0.7';
+                    }
+                    
+                    lastScrollTop = scrollTop;
+                }, { passive: true });
+            }
+
+            // Add click functionality for creative section
+            const creativeSection = document.querySelector('.creative');
             
-            window.addEventListener('scroll', () => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                if (scrollTop > lastScrollTop) {
-                    indicator.style.opacity = '0';
-                } else if (scrollTop < 50) {
-                    indicator.style.opacity = '0.7';
-                }
-                
-                lastScrollTop = scrollTop;
-            }, { passive: true });
-        }
-
-        // Add click functionality for creative section
-        const creativeSection = document.querySelector('.creative');
-        
-        // Add hover effect for creative section
-        creativeSection.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.02)';
-        });
-        
-        creativeSection.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
+            // Add hover effect for creative section
+            creativeSection.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+            });
+            
+            creativeSection.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
         });
     </script>
 </body>
