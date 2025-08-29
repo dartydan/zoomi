@@ -13,234 +13,416 @@
     <title>ZOOMI | Digital Marketing Agency - SEO & AI Optimization</title>
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
-    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <link rel="preload" href="marketing.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="marketing.css"></noscript>
+    <link rel="preload" href="dist/output.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="dist/output.css"></noscript>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Fira+Code:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat@latest/dist/basecoat.min.css">
 </head>
-<body>
+<body class="font-sans text-foreground bg-background">
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MLPV725"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="nav-logo">ZOOMI</a>
-            <div class="nav-menu">
-                <a href="#home" class="nav-link">Home</a>
-                <a href="#services" class="nav-link">Services</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="https://blog.zoomi.co" class="nav-link" target="_blank">Blog</a>
-                <a href="#contact" class="nav-link">Contact</a>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full navbar z-50 transition-all duration-300">
+        <div class="container">
+            <div class="flex justify-between items-center h-16 lg:h-20">
+                <a href="index.html" class="text-2xl lg:text-3xl font-bold gradient-text relative" data-text="ZOOMI">ZOOMI</a>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="nav-link">Home</a>
+                    <a href="#services" class="nav-link">Services</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="https://blog.zoomi.co" class="nav-link" target="_blank">Blog</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                    <button id="dark-mode-toggle" class="dark-mode-toggle p-2 rounded-lg hover:bg-muted transition-colors duration-300 text-foreground">
+                        <i class="fas fa-moon text-lg" id="dark-mode-icon"></i>
+                    </button>
+                </div>
+                <button class="md:hidden p-2 rounded-lg hover:bg-muted transition-colors duration-300" id="mobile-menu-btn">
+                    <i class="fas fa-bars text-foreground"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-4 py-6 space-y-4 bg-card border-t border-border">
+                <a href="#home" class="block py-2 nav-link">Home</a>
+                <a href="#services" class="block py-2 nav-link">Services</a>
+                <a href="#about" class="block py-2 nav-link">About</a>
+                <a href="https://blog.zoomi.co" class="block py-2 nav-link" target="_blank">Blog</a>
+                <a href="#contact" class="block py-2 nav-link">Contact</a>
+                <div class="pt-4 border-t border-border">
+                    <button id="dark-mode-toggle-mobile" class="w-full text-left py-2 nav-link flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <i class="fas fa-moon" id="dark-mode-icon-mobile"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <section id="home" class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">Modern Digital Marketing</h1>
-            <p class="hero-subtitle">SEO and AI Optimization Solutions</p>
-        </div>
-        <div class="hero-visual">
-            <div class="ai-animation">
-                <div class="neural-network"></div>
+    <!-- Hero Section -->
+    <section id="home" class="h-screen relative overflow-hidden flex items-center">
+        <div class="container relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div class="text-center lg:text-left">
+                    <h1 class="heading-1 mb-6">
+                        <span class="gradient-text relative" data-text="AI-Powered">Modern</span><br>
+                        <span class="text-foreground">Digital Marketing</span>
+                    </h1>
+                    <p class="body-large text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
+                        Transform your business with cutting-edge SEO optimization and AI-driven content strategies that deliver measurable results.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="#contact" class="btn-primary inline-flex items-center justify-center group">
+                            Get Free Audit Demo
+                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                        </a>
+                        <a href="#services" class="btn-secondary inline-flex items-center justify-center group">
+                            Explore Services
+                            <i class="fas fa-play ml-2 group-hover:scale-110 transition-transform duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Trust Indicators -->
+                    <div class="mt-12 flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-muted-foreground">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-primary mr-2"></i>
+                            <span>No Credit Card Required</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-secondary mr-2"></i>
+                            <span>Proven Track Record</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-accent mr-2"></i>
+                            <span>100% Satisfaction</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <!-- Main Hero Visual -->
+                    <div class="relative z-10">
+                        <div class="w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-primary to-chart-2 rounded-full flex items-center justify-center shadow-2xl relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                            <div class="w-64 h-64 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm relative">
+                                <div class="w-48 h-48 bg-white/30 rounded-full flex items-center justify-center relative">
+                                    <i class="fas fa-brain text-6xl text-white drop-shadow-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Elements -->
+                    <div class="absolute -top-4 -right-4 w-24 h-24 bg-accent rounded-full opacity-80 shadow-lg floating-circle-1 cursor-pointer transition-transform duration-300 hover:scale-110"></div>
+                    <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-chart-4 rounded-full opacity-80 shadow-lg floating-circle-2 cursor-pointer transition-transform duration-300 hover:scale-110"></div>
+                    <div class="absolute top-1/2 -right-8 w-12 h-12 bg-primary/60 rounded-full opacity-60 shadow-lg floating-circle-3 cursor-pointer transition-transform duration-300 hover:scale-110"></div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="services" class="services">
+    <!-- Services Section -->
+    <section id="services" class="section">
         <div class="container">
-            <h2 class="section-title">Our Services</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h3>SEO & AI Audits</h3>
-                    <p>Comprehensive technical and AI-powered audits to identify optimization opportunities and performance gaps in your digital presence.</p>
-                    <ul class="service-features">
-                        <li>Technical SEO Analysis</li>
-                        <li>AI Content Performance Review</li>
-                        <li>Competitor Benchmarking</li>
-                        <li>Actionable Recommendations</li>
-                    </ul>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-route"></i>
-                    </div>
-                    <h3>Strategy Roadmaps</h3>
-                    <p>Data-driven strategic planning and roadmaps that align your business goals with AI-powered SEO and marketing initiatives.</p>
-                    <ul class="service-features">
-                        <li>Custom Strategy Development</li>
-                        <li>AI Implementation Planning</li>
-                        <li>Performance Milestones</li>
-                        <li>ROI Projections</li>
-                    </ul>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Custom Detailed Reporting</h3>
-                    <p>Comprehensive, tailored reports that provide deep insights into your digital performance, SEO metrics, and AI optimization results with actionable recommendations.</p>
-                    <ul class="service-features">
-                        <li>Performance Analytics</li>
-                        <li>SEO Metrics Tracking</li>
-                        <li>AI Optimization Insights</li>
-                        <li>Actionable Recommendations</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="about" class="about">
-        <div class="container">
-            <div class="about-header">
-                <h2 class="section-title">Why Choose ZOOMI?</h2>
-                                    <p class="about-subtitle">We leverage machine learning algorithms, behavioral targeting, and omnichannel attribution to deliver scalable growth solutions. Our programmatic approach ensures optimal ROAS through continuous optimization and predictive modeling.</p>
+            <div class="text-center mb-16">
+                <h2 class="section-title">Our Services</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    Comprehensive digital marketing solutions powered by AI and data-driven insights
+                </p>
             </div>
             
-            <div class="about-grid">
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-brain"></i>
+            <div class="grid-responsive lg:gap-12">
+                <!-- SEO & AI Audits -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-chart-2 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-search text-2xl text-white"></i>
                     </div>
-                    <div class="about-card-content">
-                        <h3>AI-First Approach</h3>
-                        <p>Optimize your content to be prominently featured in AI chat responses, ensuring your brand appears when users ask AI assistants about your industry, products, or services.</p>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">SEO & AI Audits</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        Comprehensive technical and AI-powered audits to identify optimization opportunities and performance gaps in your digital presence.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Technical SEO Analysis
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            AI Content Performance Review
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Competitor Benchmarking
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Actionable Recommendations
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy Roadmaps -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-chart-5 to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-route text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">Strategy Roadmaps</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        Data-driven strategic planning and roadmaps that align your business goals with AI-powered SEO and marketing initiatives.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Custom Strategy Development
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            AI Implementation Planning
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Performance Milestones
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            ROI Projections
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Custom Detailed Reporting -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-chart-5 to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-line text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">Custom Detailed Reporting</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        Comprehensive, tailored reports that provide deep insights into your digital performance, SEO metrics, and AI optimization results.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Performance Analytics
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            SEO Metrics Tracking
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            AI Optimization Insights
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Actionable Recommendations
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <div class="text-center mb-16">
+                <h2 class="heading-1 text-foreground mb-6">Why Choose ZOOMI?</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    AI-powered marketing that actually works. We combine cutting-edge technology with proven strategies to deliver measurable results.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8 lg:gap-12">
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-chart-2 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-rocket text-white text-3xl"></i>
+                    </div>
+                    <h3 class="heading-3 text-foreground mb-4">Fast Results</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        See improvements faster with our AI-driven approach that accelerates your growth through intelligent automation and real-time optimization.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Faster Results
+                        </span>
                     </div>
                 </div>
                 
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-tachometer-alt"></i>
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-secondary to-chart-4 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-line text-white text-3xl"></i>
                     </div>
-                    <div class="about-card-content">
-                        <h3>Real-Time Optimization</h3>
-                        <p>Continuous monitoring and automatic adjustments to ensure peak performance at all times with live data analysis and instant optimizations.</p>
+                    <h3 class="heading-3 text-foreground mb-4">Proven ROI</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        Data-backed strategies that consistently deliver 3x+ returns on your marketing investment through advanced analytics and predictive modeling.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary/10 text-secondary">
+                            <i class="fas fa-trending-up mr-2"></i>
+                            Proven ROI Track Record
+                        </span>
                     </div>
                 </div>
                 
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-users"></i>
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-chart-4 to-chart-5 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-headset text-white text-3xl"></i>
                     </div>
-                    <div class="about-card-content">
-                        <h3>Expert Team</h3>
-                        <p>Experienced marketing professionals working alongside AI to deliver human-centric results with personalized strategies and dedicated support.</p>
+                    <h3 class="heading-3 text-foreground mb-4">24/7 Support</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        Round-the-clock monitoring and support to ensure your campaigns never sleep. Our team and AI systems work together to maximize your success.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-chart-4/10 text-chart-4">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            Always available
+                        </span>
                     </div>
                 </div>
             </div>
             
-            <div class="about-highlight">
-                <div class="highlight-content">
-                    <h3>Proven Results</h3>
-                    <p>Join our clients that have transformed their digital presence with our solutions.</p>
-                    <div class="highlight-stats">
-                        <div class="highlight-stat">
-                            <span class="highlight-number">100k+</span>
-                            <span class="highlight-label">Pages Optimized</span>
-                        </div>
-                        <div class="highlight-stat">
-                            <span class="highlight-number">24/7</span>
-                            <span class="highlight-label">Monitoring</span>
-                        </div>
-                        <div class="highlight-stat">
-                            <span class="highlight-number">10+</span>
-                            <span class="highlight-label">Years Experience</span>
-                        </div>
+
+        </div>
+    </section>
+
+    <!-- Audit Section -->
+    <section id="contact" class="section relative overflow-hidden">
+        <div class="container relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="heading-2 text-foreground mb-6">Get Your Free On-Page Audit Demo</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    Discover what's holding your website back with our comprehensive AI-powered audit analysis
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8 lg:gap-12">
+                <!-- What You'll Get -->
+                <div class="card-elevated p-8 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-chart-2 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-clipboard-check text-3xl text-white"></i>
                     </div>
+                    <h3 class="heading-3 text-foreground mb-4">What You'll Get</h3>
+                    <ul class="space-y-3 text-left">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Technical SEO Analysis</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Performance Insights</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">AI Content Review</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Actionable Recommendations</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="highlight-visual">
-                    <div class="tech-stack">
-                        <div class="tech-item">AI/ML</div>
-                        <div class="tech-item">SEO</div>
-                        <div class="tech-item">Analytics</div>
-                        <div class="tech-item">Automation</div>
+                
+                <!-- Audit Form -->
+                <div class="card-elevated p-8 lg:col-span-2">
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="heading-3 text-foreground mb-4">Ready to Transform Your Digital Presence?</h3>
+                            <p class="body-medium text-muted-foreground mb-6 leading-relaxed">
+                                Get a comprehensive on-page audit demo that reveals optimization opportunities and performance gaps in your digital presence.
+                            </p>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-semibold text-foreground mb-4">Get Your Free Audit</h4>
+                                <form id="auditForm" class="space-y-4">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="fas fa-envelope text-muted-foreground"></i>
+                                        </div>
+                                        <input type="email" id="email" name="email" placeholder="Your Email Address" required 
+                                               class="form-input pl-12">
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="fas fa-globe text-muted-foreground"></i>
+                                        </div>
+                                        <input type="url" id="url" name="url" placeholder="Website URL to Audit" required 
+                                               class="form-input pl-12">
+                                    </div>
+                                    <button type="submit" class="btn-primary w-full">
+                                        Get Free Audit Demo
+                                        <i class="fas fa-arrow-right ml-2"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2 class="section-title">Get Your Free On-Page Audit Demo</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <h3>Discover What's Holding Your Website Back</h3>
-                    <p>Get a comprehensive on-page audit demo that reveals optimization opportunities and performance gaps in your digital presence.</p>
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <i class="fas fa-envelope"></i>
-                            <span>hello@zoomi.com</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-phone"></i>
-                            <span>+1 (555) 123-4567</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Digital World, Everywhere</span>
-                        </div>
-                    </div>
-                </div>
-                <form class="contact-form" id="auditForm">
-                    <div class="form-group">
-                        <input type="email" id="email" name="email" placeholder="Your Email Address" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="url" id="url" name="url" placeholder="Website URL to Audit" required>
-                    </div>
-                    <button type="submit" class="submit-btn">Get On-Page Audit Demo</button>
-                </form>
-            </div>
-        </div>
-    </section>
 
-    <footer class="footer">
+
+    <!-- Footer -->
+    <footer class="bg-[var(--card)] text-[var(--card-foreground)] py-16">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>ZOOMI</h4>
-                    <p>AI-Powered Digital Marketing Agency</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <h4 class="text-2xl font-bold gradient-text relative" data-text="ZOOMI">ZOOMI</h4>
+                    <p class="text-[var(--muted-foreground)]">Modern Digital Marketing Agency</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Services</h4>
-                    <ul>
-                        <li><a href="#services">SEO Optimization</a></li>
-                        <li><a href="#services">AI Content</a></li>
-                        <li><a href="#services">Data Analytics</a></li>
-                        <li><a href="#services">Digital Advertising</a></li>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Services</h4>
+                    <ul class="space-y-2 text-[var(--muted-foreground)]">
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">SEO Optimization</a></li>
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">AI Content</a></li>
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">Data Analytics</a></li>
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">Digital Advertising</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="https://blog.zoomi.co" target="_blank">Blog</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        <li><a href="index.html">Home</a></li>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Resources</h4>
+                    <ul class="space-y-2 text-[var(--muted-foreground)]">
+                        <li><a href="https://blog.zoomi.co" target="_blank" class="hover:text-[var(--foreground)] transition-colors duration-300">Blog</a></li>
+                        <li><a href="#about" class="hover:text-[var(--foreground)] transition-colors duration-300">About Us</a></li>
+                        <li><a href="#contact" class="hover:text-[var(--foreground)] transition-colors duration-300">Contact</a></li>
+                        <li><a href="index.html" class="hover:text-[var(--foreground)] transition-colors duration-300">Home</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Connect</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Connect</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-envelope text-primary text-sm"></i>
+                            </div>
+                            <a href="mailto:hello@zoomi.co" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300">
+                                hello@zoomi.co
+                            </a>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-phone text-secondary text-sm"></i>
+                            </div>
+                            <a href="tel:+17652880057" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300">
+                                +1 (765) 280-0057
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 ZOOMI. All rights reserved.</p>
+            <div class="border-t border-[var(--border)]/20 pt-8 text-center">
+                <p class="text-[var(--muted-foreground)]">&copy; 2024 ZOOMI. All rights reserved.</p>
             </div>
         </div>
     </footer>

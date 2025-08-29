@@ -1,0 +1,492 @@
+@import "tailwindcss";
+
+/* Basecoat UI Integration */
+@import "https://cdn.jsdelivr.net/npm/basecoat@latest/dist/basecoat.min.css";
+
+/* Custom Design System */
+:root {
+  --background: #f6e6ee;
+  --foreground: #5b5b5b;
+  --card: #fdedc9;
+  --card-foreground: #5b5b5b;
+  --popover: #ffffff;
+  --popover-foreground: #5b5b5b;
+  --primary: #d04f99;
+  --primary-foreground: #ffffff;
+  --secondary: #8acfd1;
+  --secondary-foreground: #333333;
+  --muted: #b2e1eb;
+  --muted-foreground: #7a7a7a;
+  --accent: #fbe2a7;
+  --accent-foreground: #333333;
+  --destructive: #f96f70;
+  --destructive-foreground: #ffffff;
+  --border: #d04f99;
+  --input: #e4e4e4;
+  --ring: #e670ab;
+  --chart-1: #e670ab;
+  --chart-2: #84d2e2;
+  --chart-3: #fbe2a7;
+  --chart-4: #f3a0ca;
+  --chart-5: #d7488e;
+  --sidebar: #f8d8ea;
+  --sidebar-foreground: #333333;
+  --sidebar-primary: #ec4899;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f9a8d4;
+  --sidebar-accent-foreground: #333333;
+  --sidebar-border: #f3e8ff;
+  --sidebar-ring: #ec4899;
+  --font-sans: Poppins, sans-serif;
+  --font-serif: Lora, serif;
+  --font-mono: Fira Code, monospace;
+  --radius: 0.4rem;
+  --shadow-2xs: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 0.50);
+  --shadow-xs: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 0.50);
+  --shadow-sm: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 1.00), 3px 1px 2px -1px hsl(325.7800 58.1800% 56.8600% / 1.00);
+  --shadow: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 1.00), 3px 1px 2px -1px hsl(325.7800 58.1800% 56.8600% / 1.00);
+  --shadow-md: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 1.00), 3px 2px 4px -1px hsl(325.7800 58.1800% 56.8600% / 1.00);
+  --shadow-lg: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 1.00), 3px 4px 6px -1px hsl(325.7800 58.1800% 56.8600% / 1.00);
+  --shadow-xl: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 1.00), 3px 8px 10px -1px hsl(325.7800 58.1800% 56.8600% / 1.00);
+  --shadow-2xl: 3px 3px 0px 0px hsl(325.7800 58.1800% 56.8600% / 2.50);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: #12242e;
+  --foreground: #f3e3ea;
+  --card: #1c2e38;
+  --card-foreground: #f3e3ea;
+  --popover: #1c2e38;
+  --popover-foreground: #f3e3ea;
+  --primary: #fbe2a7;
+  --primary-foreground: #12242e;
+  --secondary: #e4a2b1;
+  --secondary-foreground: #12242e;
+  --muted: #24272b;
+  --muted-foreground: #e4a2b1;
+  --accent: #c67b96;
+  --accent-foreground: #f3e3ea;
+  --destructive: #e35ea4;
+  --destructive-foreground: #12242e;
+  --border: #324859;
+  --input: #20333d;
+  --ring: #50afb6;
+  --chart-1: #50afb6;
+  --chart-2: #e4a2b1;
+  --chart-3: #c67b96;
+  --chart-4: #175c6c;
+  --chart-5: #24272b;
+  --sidebar: #101f28;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #ec4899;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f9a8d4;
+  --sidebar-accent-foreground: #1f2937;
+  --sidebar-border: #374151;
+  --sidebar-ring: #ec4899;
+  --font-sans: Poppins, sans-serif;
+  --font-serif: Lora, serif;
+  --font-mono: Fira Code, monospace;
+  --radius: 0.4rem;
+  --shadow-2xs: 3px 3px 0px 0px hsl(28 13% 20% / 0.50);
+  --shadow-xs: 3px 3px 0px 0px hsl(28 13% 20% / 0.50);
+  --shadow-sm: 3px 3px 0px 0px hsl(28 13% 20% / 1.00), 3px 1px 2px -1px hsl(28 13% 20% / 1.00);
+  --shadow: 3px 3px 0px 0px hsl(28 13% 20% / 1.00), 3px 1px 2px -1px hsl(28 13% 20% / 1.00);
+  --shadow-md: 3px 3px 0px 0px hsl(28 13% 20% / 1.00), 3px 2px 4px -1px hsl(28 13% 20% / 1.00);
+  --shadow-lg: 3px 3px 0px 0px hsl(28 13% 20% / 1.00), 3px 4px 6px -1px hsl(28 13% 20% / 1.00);
+  --shadow-xl: 3px 3px 0px 0px hsl(28 13% 20% / 1.00), 3px 8px 10px -1px hsl(28 13% 20% / 1.00);
+  --shadow-2xl: 3px 3px 0px 0px hsl(28 13% 20% / 2.50);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}
+
+/* Dark mode transition styles */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Basecoat UI Component System */
+@layer components {
+  /* Basecoat UI Button Components */
+  .btn-primary {
+    @apply bg-[var(--primary)] hover:bg-[var(--chart-2)] text-[var(--primary-foreground)] font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-[var(--secondary)] hover:bg-[var(--accent)] text-[var(--secondary-foreground)] font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2;
+  }
+  
+  .btn-ghost {
+    @apply text-[var(--foreground)] hover:bg-[var(--muted)] font-medium py-3 px-6 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2;
+  }
+  
+  /* Basecoat UI Card Components */
+  .card {
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-[var(--border)];
+  }
+  
+  .card-elevated {
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-[var(--border)];
+  }
+  
+  .card-interactive {
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-[var(--border)] cursor-pointer hover:border-[var(--primary)];
+  }
+  
+  /* Basecoat UI Form Components */
+  .form-input {
+    @apply w-full px-4 py-3 border border-[var(--input)] rounded-lg focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)] transition-all duration-300 bg-[var(--card)] text-[var(--foreground)];
+  }
+  
+  .form-textarea {
+    @apply w-full px-4 py-3 border border-[var(--input)] rounded-lg focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)] transition-all duration-300 bg-[var(--card)] text-[var(--foreground)] resize-y min-h-[120px];
+  }
+  
+  .form-select {
+    @apply w-full px-4 py-3 border border-[var(--input)] rounded-lg focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)] transition-all duration-300 bg-[var(--card)] text-[var(--foreground)] appearance-none bg-no-repeat bg-right pr-10;
+  }
+  
+  .form-checkbox {
+    @apply w-4 h-4 text-[var(--primary)] bg-[var(--card)] border-[var(--input)] rounded focus:ring-[var(--ring)] focus:ring-2;
+  }
+  
+  .form-radio {
+    @apply w-4 h-4 text-[var(--primary)] bg-[var(--card)] border-[var(--input)] focus:ring-[var(--ring)] focus:ring-2;
+  }
+  
+  /* Basecoat UI Typography Components */
+  .section-title {
+    @apply text-4xl md:text-5xl font-bold text-[var(--foreground)] text-center mb-8 font-serif;
+  }
+  
+  .heading-1 {
+    @apply text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight font-sans;
+  }
+  
+  .heading-2 {
+    @apply text-3xl lg:text-4xl font-bold leading-tight font-sans;
+  }
+  
+  .heading-3 {
+    @apply text-2xl lg:text-3xl font-semibold leading-tight font-sans;
+  }
+  
+  .body-large {
+    @apply text-xl lg:text-2xl leading-relaxed;
+  }
+  
+  .body-medium {
+    @apply text-base lg:text-lg leading-relaxed;
+  }
+  
+  .body-small {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .caption {
+    @apply text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider;
+  }
+  
+  /* Basecoat UI Navigation Components */
+  .nav-link {
+    @apply text-[var(--foreground)] hover:text-[var(--primary)] transition-colors duration-300 font-medium;
+  }
+  
+  .nav-link-active {
+    @apply text-[var(--primary)] font-semibold;
+  }
+  
+  .nav-dropdown {
+    @apply absolute top-full left-0 mt-2 w-48 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg py-2 z-50;
+  }
+  
+  /* Navigation Background */
+  .navbar {
+    @apply bg-[var(--card)]/95 backdrop-blur-xl border-b border-[var(--border)]/50;
+  }
+  
+  /* Navbar scrolled state */
+  .navbar.scrolled {
+    @apply bg-[var(--card)]/98 shadow-lg;
+  }
+  
+  /* Basecoat UI Layout Components */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .section {
+    @apply py-16 lg:py-24;
+  }
+  
+  .section-sm {
+    @apply py-8 lg:py-16;
+  }
+  
+  .section-lg {
+    @apply py-20 lg:py-32;
+  }
+  
+  .grid-responsive {
+    @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  /* Basecoat UI Interactive Components */
+  .gradient-text {
+    @apply bg-gradient-to-r from-[var(--primary)] to-[var(--chart-4)] bg-clip-text text-transparent;
+  }
+  
+  .hero-bg {
+    @apply bg-gradient-to-br from-[var(--background)] via-[var(--card)] to-[var(--secondary)];
+  }
+  
+  .contact-bg {
+    @apply bg-gradient-to-br from-[var(--primary)] to-[var(--chart-2)];
+  }
+  
+  .footer-bg {
+    @apply bg-[var(--foreground)] text-[var(--background)];
+  }
+  
+  /* Basecoat UI Dark Mode Components */
+  .dark-mode-toggle {
+    @apply relative overflow-hidden;
+  }
+  
+  .dark-mode-toggle::before {
+    content: '';
+    @apply absolute inset-0 bg-[var(--accent)] opacity-0 transition-opacity duration-300;
+  }
+  
+  .dark-mode-toggle:hover::before {
+    @apply opacity-20;
+  }
+  
+  .dark-mode-toggle:focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)];
+  }
+  
+  .dark-mode-toggle:active {
+    @apply transform scale-95;
+  }
+  
+  /* Basecoat UI Accessibility Components */
+  .nav-link:focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)] rounded;
+  }
+  
+  .btn-primary:focus,
+  .btn-secondary:focus,
+  .btn-outline:focus,
+  .btn-ghost:focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)];
+  }
+  
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)];
+  }
+  
+  /* High contrast focus indicators for better accessibility */
+  .card:focus-within {
+    @apply ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)];
+  }
+  
+  /* Ensure sufficient contrast for muted text */
+  .text-muted-foreground {
+    @apply text-[var(--muted-foreground)];
+  }
+  
+  /* High contrast links */
+  a:not(.nav-link):not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-ghost) {
+    @apply text-[var(--primary)] hover:text-[var(--chart-2)];
+  }
+  
+  a:not(.nav-link):not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-ghost):focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)] rounded;
+  }
+  
+  /* Basecoat UI Form Components */
+  .form-input::placeholder {
+    @apply text-[var(--muted-foreground)] opacity-80;
+  }
+  
+  /* Ensure form labels have sufficient contrast */
+  label {
+    @apply text-[var(--foreground)] font-medium;
+  }
+  
+  /* High contrast for form validation messages */
+  .form-error {
+    @apply text-[var(--destructive)] bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 rounded-lg p-3;
+  }
+  
+  .form-success {
+    @apply text-green-700 bg-green-100 border border-green-200 rounded-lg p-3;
+  }
+  
+  /* Ensure sufficient contrast for icons */
+  .icon-primary {
+    @apply text-[var(--primary)];
+  }
+  
+  .icon-secondary {
+    @apply text-[var(--muted-foreground)];
+  }
+  
+  /* High contrast for interactive elements */
+  .interactive-element:focus {
+    @apply outline-none ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-[var(--background)];
+  }
+  
+  /* Ensure sufficient contrast for borders */
+  .border-accessible {
+    @apply border-[var(--border)];
+  }
+  
+  /* High contrast for selection */
+  ::selection {
+    @apply bg-[var(--primary)] text-[var(--primary-foreground)];
+  }
+  
+  ::-moz-selection {
+    @apply bg-[var(--primary)] text-[var(--primary-foreground)];
+  }
+  
+  /* Basecoat UI Animation Components */
+  .animate-fade-in {
+    @apply opacity-0 animate-[fadeIn_0.6s_ease-out_forwards];
+  }
+  
+  .animate-slide-up {
+    @apply opacity-0 translate-y-8 animate-[slideUp_0.6s_ease-out_forwards];
+  }
+  
+  .animate-scale-in {
+    @apply opacity-0 scale-95 animate-[scaleIn_0.6s_ease-out_forwards];
+  }
+  
+  /* Basecoat UI Utility Components */
+  .glass-effect {
+    @apply bg-[var(--card)]/80 backdrop-blur-xl border border-[var(--border)]/50;
+  }
+  
+  .gradient-border {
+    @apply relative before:absolute before:inset-0 before:p-[2px] before:bg-gradient-to-r before:from-[var(--primary)] before:to-[var(--secondary)] before:rounded-lg before:-z-10;
+  }
+  
+  .text-shadow {
+    @apply drop-shadow-lg;
+  }
+  
+  /* Hide Unicorn Studio logo */
+  [data-us-project] + div,
+  [data-us-project] ~ div,
+  .us-logo,
+  .us-branding,
+  .us-watermark {
+    display: none !important;
+  }
+  
+  /* Floating Circle Animations */
+  .floating-circle-1 {
+    animation: float-1 6s ease-in-out infinite;
+    --avoid-x: 0px;
+    --avoid-y: 0px;
+  }
+  
+  .floating-circle-2 {
+    animation: float-2 8s ease-in-out infinite;
+    --avoid-x: 0px;
+    --avoid-y: 0px;
+  }
+  
+  .floating-circle-3 {
+    animation: float-3 7s ease-in-out infinite;
+    --avoid-x: 0px;
+    --avoid-y: 0px;
+  }
+  
+  @keyframes float-1 {
+    0%, 100% { transform: translateY(0px) translateX(0px) translate(var(--avoid-x), var(--avoid-y)); }
+    25% { transform: translateY(-8px) translateX(4px) translate(var(--avoid-x), var(--avoid-y)); }
+    50% { transform: translateY(-4px) translateX(-2px) translate(var(--avoid-x), var(--avoid-y)); }
+    75% { transform: translateY(-12px) translateX(6px) translate(var(--avoid-x), var(--avoid-y)); }
+  }
+  
+  @keyframes float-2 {
+    0%, 100% { transform: translateY(0px) translateX(0px) translate(var(--avoid-x), var(--avoid-y)); }
+    25% { transform: translateY(6px) translateX(-4px) translate(var(--avoid-x), var(--avoid-y)); }
+    50% { transform: translateY(12px) translateX(2px) translate(var(--avoid-x), var(--avoid-y)); }
+    75% { transform: translateY(4px) translateX(-6px) translate(var(--avoid-x), var(--avoid-y)); }
+  }
+  
+  @keyframes float-3 {
+    0%, 100% { transform: translateY(0px) translateX(0px) translate(var(--avoid-x), var(--avoid-y)); }
+    25% { transform: translateY(-6px) translateX(3px) translate(var(--avoid-x), var(--avoid-y)); }
+    50% { transform: translateY(-3px) translateX(-1px) translate(var(--avoid-x), var(--avoid-y)); }
+    75% { transform: translateY(-9px) translateX(5px) translate(var(--avoid-x), var(--avoid-y)); }
+  }
+}
