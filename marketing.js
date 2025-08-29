@@ -201,12 +201,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission handling for audit demo
     const auditForm = document.getElementById('auditForm');
     if (auditForm) {
+        console.log('Audit form found and event listener added');
         auditForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            console.log('Form submission triggered');
             
             // Get form data
             const email = this.querySelector('#email').value;
             const url = this.querySelector('#url').value;
+            console.log('Form data:', { email, url });
             
             // Validation
             if (!email || !url) {
@@ -239,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Send data to webhook via GET with query parameters
                 const webhookUrl = `https://danzoomi.app.n8n.cloud/webhook/ba96e36a-328b-4be6-80ee-ce990120742a?email=${encodeURIComponent(email)}&url=${encodeURIComponent(url)}`;
+                console.log('Submitting to webhook:', webhookUrl);
                 const response = await fetch(webhookUrl, {
                     method: 'GET'
                 });

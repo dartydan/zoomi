@@ -10,9 +10,34 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Transform your business with AI-powered SEO optimization, technical audits, and data-driven digital marketing strategies. Get your free on-page audit demo today.">
+    <link rel="canonical" href="https://www.zoomi.co/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.zoomi.co/">
+    <meta property="og:title" content="ZOOMI | AI-Powered Digital Marketing Agency - SEO & AI Optimization">
+    <meta property="og:description" content="Transform your business with AI-powered SEO optimization, technical audits, and data-driven digital marketing strategies. Get your free on-page audit demo today.">
+    <meta property="og:image" content="https://www.zoomi.co/puzzle.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.zoomi.co/">
+    <meta property="twitter:title" content="ZOOMI | AI-Powered Digital Marketing Agency - SEO & AI Optimization">
+    <meta property="twitter:description" content="Transform your business with AI-powered SEO optimization, technical audits, and data-driven digital marketing strategies. Get your free on-page audit demo today.">
+    <meta property="twitter:image" content="https://www.zoomi.co/puzzle.png">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index,follow">
+    <meta name="author" content="ZOOMI Digital Marketing Agency">
+    <meta name="keywords" content="digital marketing agency, SEO optimization, AI-powered marketing, technical SEO audit, on-page SEO, AI content optimization">
+    
     <title>ZOOMI | Digital Marketing Agency - SEO & AI Optimization</title>
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="icon" type="image/png" href="puzzle.png">
     <link rel="preload" href="dist/output.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="dist/output.css"></noscript>
@@ -31,12 +56,12 @@
     <nav class="fixed top-0 w-full navbar z-50 transition-all duration-300">
         <div class="container">
             <div class="flex justify-between items-center h-16 lg:h-20">
-                <a href="index" class="text-2xl lg:text-3xl font-bold gradient-text relative" data-text="ZOOMI">ZOOMI</a>
+                <a href="/" class="text-2xl lg:text-3xl font-bold gradient-text relative" data-text="ZOOMI">ZOOMI</a>
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="#home" class="nav-link">Home</a>
                     <a href="#services" class="nav-link">Services</a>
                     <a href="#about" class="nav-link">About</a>
-                    <a href="https://blog.zoomi.co" class="nav-link" target="_blank">Blog</a>
+                    <a href="https://blog.zoomi.co" class="nav-link" target="_blank" rel="noopener noreferrer">Blog</a>
                     <a href="#contact" class="nav-link">Contact</a>
                     <button id="dark-mode-toggle" class="dark-mode-toggle p-2 rounded-lg hover:bg-muted transition-colors duration-300 text-foreground">
                         <i class="fas fa-moon text-lg" id="dark-mode-icon"></i>
@@ -113,7 +138,7 @@
                             <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
                             <div class="w-64 h-64 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm relative">
                                 <div class="w-48 h-48 bg-white/30 rounded-full flex items-center justify-center relative">
-                                    <i class="fas fa-brain text-6xl text-white drop-shadow-lg"></i>
+                                    <i class="fas fa-brain text-6xl text-white drop-shadow-lg" aria-label="AI-powered digital marketing brain icon"></i>
                                 </div>
                             </div>
                         </div>
@@ -393,10 +418,10 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Resources</h4>
                     <ul class="space-y-2 text-[var(--muted-foreground)]">
-                        <li><a href="https://blog.zoomi.co" target="_blank" class="hover:text-[var(--foreground)] transition-colors duration-300">Blog</a></li>
+                        <li><a href="https://blog.zoomi.co" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--foreground)] transition-colors duration-300">Blog</a></li>
                         <li><a href="#about" class="hover:text-[var(--foreground)] transition-colors duration-300">About Us</a></li>
                         <li><a href="#contact" class="hover:text-[var(--foreground)] transition-colors duration-300">Contact</a></li>
-                        <li><a href="index" class="hover:text-[var(--foreground)] transition-colors duration-300">Home</a></li>
+                        <li><a href="/" class="hover:text-[var(--foreground)] transition-colors duration-300">Home</a></li>
                     </ul>
                 </div>
                 <div>
@@ -428,5 +453,54 @@
     </footer>
 
     <script src="marketing.js" defer></script>
+    
+    <!-- JSON-LD Schema Markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "ZOOMI",
+        "url": "https://www.zoomi.co",
+        "logo": "https://www.zoomi.co/puzzle.png",
+        "description": "AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+1-765-280-0057",
+            "contactType": "customer service",
+            "email": "hello@zoomi.co"
+        },
+        "sameAs": [
+            "https://blog.zoomi.co"
+        ],
+        "serviceArea": {
+            "@type": "GeoCircle",
+            "geoMidpoint": {
+                "@type": "GeoCoordinates",
+                "latitude": 39.7684,
+                "longitude": -86.1581
+            },
+            "geoRadius": "50000"
+        }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "ZOOMI | AI-Powered Digital Marketing Agency",
+        "description": "Transform your business with AI-powered SEO optimization, technical audits, and data-driven digital marketing strategies. Get your free on-page audit demo today.",
+        "url": "https://www.zoomi.co/",
+        "mainEntity": {
+            "@type": "Service",
+            "name": "SEO & AI Audits",
+            "description": "Comprehensive technical and AI-powered audits to identify optimization opportunities and performance gaps in your digital presence",
+            "provider": {
+                "@type": "Organization",
+                "name": "ZOOMI"
+            }
+        }
+    }
+    </script>
 </body>
 </html> 
