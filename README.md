@@ -85,10 +85,11 @@ zoomi/
 ├── dist/
 │   └── output.css          # Compiled Tailwind CSS
 ├── input.css               # Tailwind CSS source with design system
-├── marketing.html          # Main marketing page
+├── index.html              # Main marketing site (homepage)
 ├── marketing.js            # JavaScript functionality
 ├── tailwind.config.js      # Tailwind configuration
 ├── postcss.config.js       # PostCSS configuration
+├── sitemap.xml             # XML sitemap for SEO
 └── package.json            # Dependencies and scripts
 ```
 

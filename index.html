@@ -10,76 +10,673 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZOOMI | Creative & Music</title>
+    <meta name="description" content="ZOOMI is an AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies that deliver measurable results.">
+    <link rel="canonical" href="https://www.zoomi.co/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.zoomi.co/">
+    <meta property="og:title" content="ZOOMI | AI-Powered Digital Marketing Agency">
+    <meta property="og:description" content="ZOOMI is an AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies that deliver measurable results.">
+    <meta property="og:image" content="https://www.zoomi.co/puzzle.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.zoomi.co/">
+    <meta property="twitter:title" content="ZOOMI | AI-Powered Digital Marketing Agency">
+    <meta property="twitter:description" content="ZOOMI is an AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies that deliver measurable results.">
+    <meta property="twitter:image" content="https://www.zoomi.co/puzzle.png">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index,follow">
+    <meta name="author" content="ZOOMI Digital Marketing Agency">
+    <meta name="keywords" content="digital marketing agency, SEO optimization, AI-powered marketing, technical SEO audit, on-page SEO, AI content optimization, marketing strategy">
+    
+    <title>ZOOMI | AI-Powered Digital Marketing Agency</title>
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
-    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="icon" type="image/png" href="puzzle.png">
+    <link rel="preload" href="dist/output.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="dist/output.css"></noscript>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Fira+Code:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat@latest/dist/basecoat.min.css">
 </head>
-<body>
+<body class="font-sans text-foreground bg-background relative overflow-x-hidden">
+
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MLPV725"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <div class="split-container">
-        <section class="split creative" onclick="window.location.href='marketing.html'">
-            <div class="content">
-                <h2>MARKETING</h2>
-                <p>Creative & Digital</p>
-            </div>
-        </section>
-        
-        <section class="split music">
-            <div class="content">
-                <h2>MUSIC</h2>
-                <p>Record Label & Production</p>
-            </div>
-        </section>
-    </div>
-
-    <h1 class="main-logo">ZOOMI</h1>
     
-    <!-- Mobile swipe indicator -->
-    <div class="swipe-indicator">
-        <i class="fas fa-chevron-down"></i>
-    </div>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full navbar z-50 transition-all duration-300">
+        <div class="container">
+            <div class="flex justify-between items-center h-16 lg:h-20">
+                <a href="/" class="text-2xl lg:text-3xl font-bold gradient-text relative" data-text="ZOOMI">ZOOMI</a>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="nav-link">Home</a>
+                    <a href="#services" class="nav-link">Services</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="https://blog.zoomi.co" class="nav-link" target="_blank" rel="noopener noreferrer">Blog</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                    <button id="dark-mode-toggle" class="dark-mode-toggle p-2 rounded-lg hover:bg-muted transition-colors duration-300 text-foreground">
+                        <i class="fas fa-moon text-lg" id="dark-mode-icon"></i>
+                    </button>
+                </div>
+                <button class="md:hidden p-2 rounded-lg hover:bg-muted transition-colors duration-300" id="mobile-menu-btn">
+                    <i class="fas fa-bars text-foreground"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-4 py-6 space-y-4 bg-card border-t border-border">
+                <a href="#home" class="block py-2 nav-link">Home</a>
+                <a href="#services" class="block py-2 nav-link">Services</a>
+                <a href="#about" class="block py-2 nav-link">About</a>
+                <a href="https://blog.zoomi.co" class="block py-2 nav-link" target="_blank" rel="noopener noreferrer">Blog</a>
+                <a href="#contact" class="block py-2 nav-link">Contact</a>
+                <div class="pt-4 border-t border-border">
+                    <button id="dark-mode-toggle-mobile" class="w-full text-left py-2 nav-link flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <i class="fas fa-moon" id="dark-mode-icon-mobile"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <script src="cursor.js" defer></script>
-    <script>
-        // Handle mobile scroll indicator
-        document.addEventListener('DOMContentLoaded', function() {
-            const indicator = document.querySelector('.swipe-indicator');
+    <!-- Hero Section -->
+    <section id="home" class="relative overflow-hidden flex items-center justify-center" style="height: calc(100vh - 5rem); padding-top: 5rem; scroll-margin-top: 5rem;">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <!-- Floating Particles -->
+            <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-primary/30 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
+            <div class="absolute top-1/3 right-1/4 w-1 h-1 bg-secondary/40 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-accent/35 rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute top-2/3 right-1/3 w-1 h-1 bg-chart-4/30 rounded-full animate-pulse" style="animation-delay: 0.5s;"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-2 h-2 bg-chart-5/25 rounded-full animate-pulse" style="animation-delay: 1.5s;"></div>
+            
+            <!-- Gradient Orbs -->
+            <div class="absolute top-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 0.3s;"></div>
+            <div class="absolute bottom-1/4 left-1/4 w-40 h-40 bg-gradient-to-br from-secondary/8 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1.2s;"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-br from-accent/5 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.8s;"></div>
+        </div>
+        <div class="container relative z-10 h-full flex items-center">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
+                <div class="text-center lg:text-left">
+                    <h1 class="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 group">
+                        <span class="gradient-text relative transition-all duration-500 group-hover:scale-105" data-text="AI-Powered">AI-Powered</span><br>
+                        <span class="text-foreground transition-all duration-500 group-hover:text-primary/80">Digital Marketing Agency</span><br>
+                        <span class="text-lg font-normal text-muted-foreground mt-2 transition-all duration-500 group-hover:text-secondary/80">SEO Experts &amp; Strategic Growth Partners</span>
+                    </h1>
+                    <p class="body-large text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
+                        We help businesses grow with cutting-edge SEO optimization, comprehensive audits, and AI-driven content strategies that deliver measurable results and sustainable growth.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="#contact" class="btn-primary inline-flex items-center justify-center group">
+                            Get Your Free SEO Audit
+                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                        </a>
+                        <a href="#services" class="btn-secondary inline-flex items-center justify-center group">
+                            View Our Services
+                            <i class="fas fa-chevron-down ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Trust Indicators -->
+                    <div class="mt-12 flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-muted-foreground">
+                        <div class="flex items-center group cursor-pointer transition-all duration-300 hover:scale-105">
+                            <i class="fas fa-check-circle text-primary mr-2 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                            <span class="transition-all duration-300 group-hover:text-primary">No Credit Card Required</span>
+                        </div>
+                        <div class="flex items-center group cursor-pointer transition-all duration-300 hover:scale-105">
+                            <i class="fas fa-chart-line text-secondary mr-2 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                            <span class="transition-all duration-300 group-hover:text-secondary">Proven Track Record</span>
+                        </div>
+                        <div class="flex items-center group cursor-pointer transition-all duration-300 hover:scale-105">
+                            <i class="fas fa-shield-alt text-accent mr-2 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                            <span class="transition-all duration-300 group-hover:text-accent">100% Satisfaction Guarantee</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            if (window.innerWidth <= 768) {
-                let lastScrollTop = 0;
+    <!-- Services Section -->
+    <section id="services" class="section">
+        <div class="container">
+            <div class="text-center mb-16">
+                <h2 class="section-title">Our Marketing Services</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    Comprehensive digital marketing solutions powered by AI and data-driven insights to accelerate your business growth
+                </p>
+            </div>
+            
+            <div class="grid-responsive lg:gap-12">
+                <!-- SEO & AI Audits -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-chart-2 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-search text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">SEO &amp; AI Audits</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        In-depth technical and AI-powered audits that uncover optimization opportunities and performance gaps in your digital presence.
+                    </p>
+                    <div class="bg-primary/10 text-primary text-sm font-semibold px-3 py-2 rounded-lg mb-4 inline-block">
+                        <i class="fas fa-chart-line mr-2"></i>84% Avg. Organic Traffic Increase
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Technical SEO Analysis
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            AI Content Performance Review
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Competitor Benchmarking
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-primary mr-3"></i>
+                            Actionable Recommendations
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy Roadmaps -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-chart-5 to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-route text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">Strategy Roadmaps</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        Custom strategic plans that align your business objectives with data-driven SEO and AI-powered marketing initiatives.
+                    </p>
+                    <div class="bg-chart-5/10 text-chart-5 text-sm font-semibold px-3 py-2 rounded-lg mb-4 inline-block">
+                        <i class="fas fa-rocket mr-2"></i>3x Avg. ROI Improvement
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Custom Strategy Development
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            AI Implementation Planning
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            Performance Milestones
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-5 mr-3"></i>
+                            ROI Projections
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Custom Detailed Reporting -->
+                <div class="card p-8 lg:p-10 group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-chart-3 to-chart-4 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-bar text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-foreground mb-4">Analytics &amp; Reporting</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        Comprehensive, tailored reports with deep insights into your digital performance, SEO metrics, and optimization results.
+                    </p>
+                    <div class="bg-chart-3/10 text-chart-3 text-sm font-semibold px-3 py-2 rounded-lg mb-4 inline-block">
+                        <i class="fas fa-tachometer-alt mr-2"></i>95% Client Satisfaction Rate
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-3 mr-3"></i>
+                            Performance Analytics Dashboard
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-3 mr-3"></i>
+                            SEO Metrics Tracking
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-3 mr-3"></i>
+                            AI Optimization Insights
+                        </li>
+                        <li class="flex items-center text-muted-foreground">
+                            <i class="fas fa-check text-chart-3 mr-3"></i>
+                            Monthly Progress Reports
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <div class="text-center mb-16">
+                <h2 class="heading-1 text-foreground mb-6">Why Choose ZOOMI?</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    We combine cutting-edge AI technology with proven marketing strategies to deliver measurable results for businesses of all sizes.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8 lg:gap-12">
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-chart-2 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-rocket text-white text-3xl"></i>
+                    </div>
+                    <h3 class="heading-3 text-foreground mb-4">Fast Results</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        See improvements faster with our AI-driven approach. We accelerate your growth through intelligent automation and real-time optimization strategies.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Results in Weeks, Not Months
+                        </span>
+                    </div>
+                </div>
                 
-                window.addEventListener('scroll', () => {
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    if (scrollTop > lastScrollTop) {
-                        indicator.style.opacity = '0';
-                    } else if (scrollTop < 50) {
-                        indicator.style.opacity = '0.7';
-                    }
-                    
-                    lastScrollTop = scrollTop;
-                }, { passive: true });
-            }
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-secondary to-chart-4 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-line text-white text-3xl"></i>
+                    </div>
+                    <h3 class="heading-3 text-foreground mb-4">Proven ROI</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        Data-backed strategies that consistently deliver 3x+ returns on your marketing investment through advanced analytics and predictive modeling.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary/10 text-secondary">
+                            <i class="fas fa-arrow-trend-up mr-2"></i>
+                            Transparent Reporting
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-elevated p-8 text-center group hover:scale-105 transition-all duration-300">
+                    <div class="w-20 h-20 bg-gradient-to-br from-chart-4 to-chart-5 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-headset text-white text-3xl"></i>
+                    </div>
+                    <h3 class="heading-3 text-foreground mb-4">Dedicated Support</h3>
+                    <p class="body-medium text-muted-foreground leading-relaxed">
+                        Ongoing support and guidance from our expert team. We work alongside you to ensure your campaigns perform at their best.
+                    </p>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-chart-4/10 text-chart-4">
+                            <i class="fas fa-users mr-2"></i>
+                            Your Success Is Our Priority
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            // Add click functionality for creative section
-            const creativeSection = document.querySelector('.creative');
+    <!-- Contact / Audit Section -->
+    <section id="contact" class="section relative overflow-hidden">
+        <div class="container relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="heading-2 text-foreground mb-6">Get Your Free SEO Audit</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    Discover what's holding your website back with our comprehensive AI-powered audit analysis. No commitment required.
+                </p>
+            </div>
             
-            // Add hover effect for creative section
-            creativeSection.addEventListener('mouseenter', function() {
-                this.style.transform = 'scale(1.02)';
-            });
+            <div class="grid lg:grid-cols-3 gap-8 lg:gap-12">
+                <!-- What You'll Get -->
+                <div class="card-elevated p-8 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-chart-2 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-clipboard-check text-3xl text-white"></i>
+                    </div>
+                    <h3 class="heading-3 text-foreground mb-4">What You'll Receive</h3>
+                    <ul class="space-y-3 text-left">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Full Technical SEO Analysis</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Page Speed &amp; Performance Insights</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">AI Content Optimization Review</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-primary mr-3 mt-1 flex-shrink-0"></i>
+                            <span class="text-muted-foreground">Prioritized Action Items</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Audit Form -->
+                <div class="card-elevated p-8 lg:col-span-2">
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="heading-3 text-foreground mb-4">Ready to Grow Your Business?</h3>
+                            <p class="body-medium text-muted-foreground mb-6 leading-relaxed">
+                                Submit your website for a free, comprehensive audit. We'll identify opportunities for improvement and provide actionable recommendations.
+                            </p>
+                            <p class="body-medium text-muted-foreground leading-relaxed">
+                                Our team will review your site and deliver your personalized audit report within 48 hours.
+                            </p>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-semibold text-foreground mb-4">Request Your Free Audit</h4>
+                                <form id="auditForm" class="space-y-4">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="fas fa-envelope text-muted-foreground"></i>
+                                        </div>
+                                        <input type="email" id="email" name="email" placeholder="Your Email Address" required 
+                                               class="form-input pl-12">
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="fas fa-globe text-muted-foreground"></i>
+                                        </div>
+                                        <input type="url" id="url" name="url" placeholder="Website URL to Audit" required 
+                                               class="form-input pl-12">
+                                    </div>
+                                    <button type="submit" class="btn-primary w-full">
+                                        Get Your Free Audit
+                                        <i class="fas fa-arrow-right ml-2"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section bg-muted/30">
+        <div class="container">
+            <div class="text-center mb-16">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="body-large text-muted-foreground max-w-3xl mx-auto">
+                    Have questions? We've got answers. Here's what clients commonly ask about our services.
+                </p>
+            </div>
             
-            creativeSection.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
-            });
-        });
+            <div class="max-w-4xl mx-auto">
+                <div class="grid gap-6">
+                    <!-- FAQ Item 1 -->
+                    <div class="card-elevated p-8 group hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-foreground mb-4 group-hover:text-primary transition-colors duration-300">
+                                    What does the free SEO audit include?
+                                </h3>
+                                <p class="text-muted-foreground leading-relaxed">
+                                    Our comprehensive audit covers technical SEO analysis, page speed assessment, AI content performance review, competitor benchmarking, and actionable recommendations to improve your search rankings and user experience.
+                                </p>
+                            </div>
+                            <div class="ml-6 flex-shrink-0">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                                    <i class="fas fa-search text-primary text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 2 -->
+                    <div class="card-elevated p-8 group hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-foreground mb-4 group-hover:text-secondary transition-colors duration-300">
+                                    How long does the audit process take?
+                                </h3>
+                                <p class="text-muted-foreground leading-relaxed">
+                                    The initial audit analysis is completed within 48 hours. You'll receive a detailed report with prioritized recommendations and a suggested implementation timeline.
+                                </p>
+                            </div>
+                            <div class="ml-6 flex-shrink-0">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-300">
+                                    <i class="fas fa-clock text-secondary text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 3 -->
+                    <div class="card-elevated p-8 group hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-foreground mb-4 group-hover:text-chart-4 transition-colors duration-300">
+                                    What makes your AI-powered approach different?
+                                </h3>
+                                <p class="text-muted-foreground leading-relaxed">
+                                    We combine advanced AI algorithms with human expertise to identify patterns and opportunities that traditional SEO tools miss. This hybrid approach delivers more accurate, actionable insights tailored to your specific business needs.
+                                </p>
+                            </div>
+                            <div class="ml-6 flex-shrink-0">
+                                <div class="w-12 h-12 bg-chart-4/10 rounded-full flex items-center justify-center group-hover:bg-chart-4/20 transition-colors duration-300">
+                                    <i class="fas fa-brain text-chart-4 text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 4 -->
+                    <div class="card-elevated p-8 group hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-foreground mb-4 group-hover:text-accent transition-colors duration-300">
+                                    What results can I expect?
+                                </h3>
+                                <p class="text-muted-foreground leading-relaxed">
+                                    While specific results vary by industry and starting point, our clients typically see significant improvements in organic traffic, search rankings, and conversion rates. We focus on sustainable, long-term growth rather than quick fixes.
+                                </p>
+                            </div>
+                            <div class="ml-6 flex-shrink-0">
+                                <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                                    <i class="fas fa-chart-line text-accent text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--card)] text-[var(--card-foreground)] py-16">
+        <div class="container">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <h4 class="text-2xl font-bold gradient-text relative mb-2" data-text="ZOOMI">ZOOMI</h4>
+                    <p class="text-[var(--muted-foreground)]">AI-Powered Digital Marketing Agency</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Services</h4>
+                    <ul class="space-y-2 text-[var(--muted-foreground)]">
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">SEO &amp; AI Audits</a></li>
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">Strategy Roadmaps</a></li>
+                        <li><a href="#services" class="hover:text-[var(--foreground)] transition-colors duration-300">Analytics &amp; Reporting</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Company</h4>
+                    <ul class="space-y-2 text-[var(--muted-foreground)]">
+                        <li><a href="#home" class="hover:text-[var(--foreground)] transition-colors duration-300">Home</a></li>
+                        <li><a href="#about" class="hover:text-[var(--foreground)] transition-colors duration-300">About Us</a></li>
+                        <li><a href="https://blog.zoomi.co" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--foreground)] transition-colors duration-300">Blog</a></li>
+                        <li><a href="#contact" class="hover:text-[var(--foreground)] transition-colors duration-300">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-[var(--foreground)]">Get In Touch</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-envelope text-primary text-sm"></i>
+                            </div>
+                            <a href="mailto:hello@zoomi.co" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300">
+                                hello@zoomi.co
+                            </a>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-phone text-secondary text-sm"></i>
+                            </div>
+                            <a href="tel:+17652880057" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300">
+                                +1 (765) 280-0057
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-[var(--border)]/20 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-[var(--muted-foreground)]">&copy; 2024 ZOOMI. All rights reserved.</p>
+                <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                    <a href="#contact" class="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300">Get Your Free Audit</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="marketing.js" defer></script>
+    
+    <!-- JSON-LD Schema Markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "ZOOMI",
+        "url": "https://www.zoomi.co",
+        "logo": "https://www.zoomi.co/puzzle.png",
+        "description": "AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+1-765-280-0057",
+            "contactType": "customer service",
+            "email": "hello@zoomi.co"
+        },
+        "sameAs": [
+            "https://blog.zoomi.co"
+        ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "ZOOMI | AI-Powered Digital Marketing Agency",
+        "description": "ZOOMI is an AI-powered digital marketing agency specializing in SEO optimization, technical audits, and data-driven strategies that deliver measurable results.",
+        "url": "https://www.zoomi.co/",
+        "mainEntity": {
+            "@type": "Service",
+            "name": "SEO & AI Audits",
+            "description": "Comprehensive technical and AI-powered audits to identify optimization opportunities and performance gaps",
+            "provider": {
+                "@type": "Organization",
+                "name": "ZOOMI"
+            }
+        }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What does the free SEO audit include?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Our comprehensive audit covers technical SEO analysis, page speed assessment, AI content performance review, competitor benchmarking, and actionable recommendations to improve your search rankings and user experience."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How long does the audit process take?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The initial audit analysis is completed within 48 hours. You'll receive a detailed report with prioritized recommendations and a suggested implementation timeline."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What makes your AI-powered approach different?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "We combine advanced AI algorithms with human expertise to identify patterns and opportunities that traditional SEO tools miss. This hybrid approach delivers more accurate, actionable insights."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What results can I expect?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "While specific results vary by industry and starting point, our clients typically see significant improvements in organic traffic, search rankings, and conversion rates. We focus on sustainable, long-term growth."
+                }
+            }
+        ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "SEO & AI Audits",
+        "description": "Comprehensive technical and AI-powered audits to identify optimization opportunities and performance gaps",
+        "provider": {
+            "@type": "Organization",
+            "name": "ZOOMI"
+        },
+        "areaServed": "United States",
+        "serviceType": "SEO Audit"
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Strategy Roadmaps",
+        "description": "Custom strategic plans that align your business objectives with data-driven SEO and AI-powered marketing initiatives",
+        "provider": {
+            "@type": "Organization",
+            "name": "ZOOMI"
+        },
+        "areaServed": "United States",
+        "serviceType": "Marketing Strategy"
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Analytics & Reporting",
+        "description": "Comprehensive reports with deep insights into your digital performance, SEO metrics, and optimization results",
+        "provider": {
+            "@type": "Organization",
+            "name": "ZOOMI"
+        },
+        "areaServed": "United States",
+        "serviceType": "Performance Analytics"
+    }
     </script>
 </body>
-</html> 
+</html>
