@@ -10,76 +10,215 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZOOMI | Creative & Music</title>
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="//www.googletagmanager.com">
-    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+    <meta name="description" content="ZOOMI is a custom software development company building web platforms, mobile apps, and AI-powered products for growing businesses.">
+    <title>ZOOMI | Custom Software Development Company</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f1d;
+            --surface: #121935;
+            --surface-soft: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+            --muted: #9ca3af;
+            --accent: #60a5fa;
+            --accent-2: #22d3ee;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top right, #172554 0%, var(--bg) 45%);
+            line-height: 1.5;
+        }
+
+        .container {
+            width: min(1120px, 92vw);
+            margin: 0 auto;
+        }
+
+        header {
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(6px);
+            position: sticky;
+            top: 0;
+            background: rgba(11,15,29,0.82);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+
+        .cta {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.65rem 1.1rem;
+            font-weight: 700;
+            color: #031018;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            cursor: pointer;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            padding: 5rem 0 4rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.8rem);
+            line-height: 1.05;
+            margin: 0 0 1rem;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 58ch;
+            margin-bottom: 1.8rem;
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+        }
+
+        .badge {
+            border: 1px solid rgba(255,255,255,0.16);
+            color: #dbeafe;
+            padding: 0.4rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+        }
+
+        .panel {
+            background: linear-gradient(165deg, rgba(96,165,250,0.14), rgba(34,211,238,0.05));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 1.2rem;
+        }
+
+        .services {
+            padding: 2.5rem 0 4rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--surface-soft);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 1.2rem;
+        }
+
+        .card h3 {
+            margin: 0 0 0.35rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 2rem 0 2.5rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; padding-top: 3rem; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MLPV725"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <div class="split-container">
-        <section class="split creative" onclick="window.location.href='marketing.html'">
-            <div class="content">
-                <h2>MARKETING</h2>
-                <p>Creative & Digital</p>
+
+    <header>
+        <div class="container nav">
+            <div class="logo">ZOOMI</div>
+            <button class="cta" onclick="window.location.href='mailto:hello@zoomi.co'">Book a discovery call</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div>
+                <h1>Custom software that helps your business move faster.</h1>
+                <p>ZOOMI is a software development company that designs, builds, and scales web apps, mobile products, and internal systems tailored to your exact workflow. We partner with startups and growing teams to ship reliable products with measurable business impact.</p>
+                <div class="badges">
+                    <span class="badge">Web App Development</span>
+                    <span class="badge">Mobile Apps</span>
+                    <span class="badge">Product Strategy</span>
+                    <span class="badge">AI Integrations</span>
+                </div>
+            </div>
+            <aside class="panel">
+                <h2>Why teams choose ZOOMI</h2>
+                <p>Senior engineering talent, clear communication, and a build process focused on outcomes—not just output.</p>
+                <ul>
+                    <li>Rapid prototyping in 2-4 weeks</li>
+                    <li>Production-ready software architecture</li>
+                    <li>Ongoing support and feature iteration</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="services">
+            <h2 class="section-title">Our custom software services</h2>
+            <div class="services-grid">
+                <article class="card">
+                    <h3>End-to-End Product Development</h3>
+                    <p>From idea validation to launch, we build user-focused products that support growth and scalability.</p>
+                </article>
+                <article class="card">
+                    <h3>Legacy System Modernization</h3>
+                    <p>We upgrade outdated tools and workflows into secure, cloud-based platforms your team actually enjoys using.</p>
+                </article>
+                <article class="card">
+                    <h3>Custom Internal Tools</h3>
+                    <p>Automate repetitive tasks, centralize operations, and improve decision making with software built for your business model.</p>
+                </article>
             </div>
         </section>
-        
-        <section class="split music">
-            <div class="content">
-                <h2>MUSIC</h2>
-                <p>Record Label & Production</p>
-            </div>
-        </section>
-    </div>
+    </main>
 
-    <h1 class="main-logo">ZOOMI</h1>
-    
-    <!-- Mobile swipe indicator -->
-    <div class="swipe-indicator">
-        <i class="fas fa-chevron-down"></i>
-    </div>
+    <footer>
+        © <span id="year"></span> ZOOMI · Custom Software Development Company
+    </footer>
 
-    <script src="cursor.js" defer></script>
     <script>
-        // Handle mobile scroll indicator
-        document.addEventListener('DOMContentLoaded', function() {
-            const indicator = document.querySelector('.swipe-indicator');
-
-            if (window.innerWidth <= 768) {
-                let lastScrollTop = 0;
-                
-                window.addEventListener('scroll', () => {
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    if (scrollTop > lastScrollTop) {
-                        indicator.style.opacity = '0';
-                    } else if (scrollTop < 50) {
-                        indicator.style.opacity = '0.7';
-                    }
-                    
-                    lastScrollTop = scrollTop;
-                }, { passive: true });
-            }
-
-            // Add click functionality for creative section
-            const creativeSection = document.querySelector('.creative');
-            
-            // Add hover effect for creative section
-            creativeSection.addEventListener('mouseenter', function() {
-                this.style.transform = 'scale(1.02)';
-            });
-            
-            creativeSection.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
-            });
-        });
+        document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 </body>
-</html> 
+</html>
