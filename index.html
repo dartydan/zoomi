@@ -14,25 +14,36 @@
     <title>ZOOMI | Custom Software Development Company</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0f1d;
-            --surface: #121935;
-            --surface-soft: rgba(255, 255, 255, 0.05);
-            --text: #f8fafc;
+            --background: #1e1b18;
+            --foreground: #e2e8f0;
+            --card: #2c2825;
+            --card-soft: #1f1c19;
+            --border: #3a3633;
             --muted: #9ca3af;
-            --accent: #60a5fa;
-            --accent-2: #22d3ee;
+            --primary: #818cf8;
+            --primary-foreground: #1e1b18;
+            --secondary: #3a3633;
+            --radius: 1.25rem;
         }
 
         * { box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            background: radial-gradient(circle at top right, #172554 0%, var(--bg) 45%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--foreground);
             line-height: 1.5;
+            background:
+                radial-gradient(circle at top right, rgba(129, 140, 248, 0.18), transparent 42%),
+                radial-gradient(circle at bottom left, rgba(129, 140, 248, 0.12), transparent 44%),
+                var(--background);
         }
 
         .container {
@@ -41,12 +52,13 @@
         }
 
         header {
-            padding: 1.2rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 0.9rem 0;
+            border-bottom: 1px solid var(--border);
             backdrop-filter: blur(6px);
             position: sticky;
             top: 0;
-            background: rgba(11,15,29,0.82);
+            z-index: 20;
+            background: color-mix(in oklab, var(--background) 88%, black);
         }
 
         .nav {
@@ -58,22 +70,29 @@
 
         .logo {
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.02em;
         }
 
         .cta {
-            border: 0;
+            border: 1px solid color-mix(in oklab, var(--primary) 45%, var(--border));
             border-radius: 999px;
             padding: 0.65rem 1.1rem;
             font-weight: 700;
-            color: #031018;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: var(--primary-foreground);
+            background: var(--primary);
             cursor: pointer;
+            box-shadow: 0 10px 20px rgba(129, 140, 248, 0.24);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(129, 140, 248, 0.3);
         }
 
         .hero {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1.15fr 1fr;
             gap: 2rem;
             align-items: center;
             padding: 5rem 0 4rem;
@@ -98,22 +117,28 @@
         }
 
         .badge {
-            border: 1px solid rgba(255,255,255,0.16);
-            color: #dbeafe;
-            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--card-soft) 80%, transparent);
+            color: #d1d5db;
+            padding: 0.42rem 0.8rem;
             border-radius: 999px;
             font-size: 0.9rem;
         }
 
         .panel {
-            background: linear-gradient(165deg, rgba(96,165,250,0.14), rgba(34,211,238,0.05));
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px;
-            padding: 1.2rem;
+            background: linear-gradient(165deg, rgba(129, 140, 248, 0.14), rgba(31, 28, 25, 0.74));
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) + 0.15rem);
+            padding: 1.3rem;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .panel h2 {
+            margin-top: 0;
         }
 
         .services {
-            padding: 2.5rem 0 4rem;
+            padding: 1.5rem 0 4rem;
         }
 
         .services-grid {
@@ -123,9 +148,9 @@
         }
 
         .card {
-            background: var(--surface-soft);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 14px;
+            background: color-mix(in oklab, var(--card) 92%, black);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 1.2rem;
         }
 
@@ -146,7 +171,7 @@
         }
 
         footer {
-            border-top: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid var(--border);
             padding: 2rem 0 2.5rem;
             color: var(--muted);
             text-align: center;
