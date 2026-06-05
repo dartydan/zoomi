@@ -10,151 +10,377 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ZOOMI is a custom software development company building web platforms, mobile apps, and AI-powered products for growing businesses.">
-    <title>ZOOMI | Custom Software Development Company</title>
+    <meta name="description" content="ZOOMI is a practical business systems company with lines in government contracting, rentals, digital services, operations, and cyber readiness.">
+    <meta property="og:title" content="ZOOMI | Practical Business Systems">
+    <meta property="og:description" content="Government contracting, rentals, digital services, operations, and cyber readiness through one accountable Zoomi platform.">
+    <meta property="og:url" content="https://zoomi.co/">
+    <meta property="og:type" content="website">
+    <title>ZOOMI | Practical Business Systems</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0f1d;
-            --surface: #121935;
-            --surface-soft: rgba(255, 255, 255, 0.05);
+            --bg: #07111f;
+            --bg-2: #0d1b2e;
+            --surface: rgba(255, 255, 255, 0.075);
+            --surface-strong: rgba(255, 255, 255, 0.12);
+            --border: rgba(255, 255, 255, 0.14);
             --text: #f8fafc;
-            --muted: #9ca3af;
-            --accent: #60a5fa;
-            --accent-2: #22d3ee;
+            --muted: #aeb8c7;
+            --soft: #dce7f5;
+            --blue: #5db8ff;
+            --cyan: #4ee4d6;
+            --gold: #f8d778;
+            --green: #85e0a3;
+            --pink: #f0a3ff;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
         }
 
         * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--text);
-            background: radial-gradient(circle at top right, #172554 0%, var(--bg) 45%);
+            background:
+                radial-gradient(circle at 12% 18%, rgba(93, 184, 255, 0.24), transparent 28rem),
+                radial-gradient(circle at 86% 10%, rgba(78, 228, 214, 0.18), transparent 24rem),
+                linear-gradient(135deg, var(--bg), var(--bg-2) 58%, #09101d);
             line-height: 1.5;
         }
 
+        a { color: inherit; }
+
         .container {
-            width: min(1120px, 92vw);
+            width: min(1160px, calc(100vw - 2rem));
             margin: 0 auto;
         }
 
-        header {
-            padding: 1.2rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            backdrop-filter: blur(6px);
+        .site-header {
             position: sticky;
             top: 0;
-            background: rgba(11,15,29,0.82);
+            z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(7, 17, 31, 0.82);
+            backdrop-filter: blur(16px);
         }
 
         .nav {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             gap: 1rem;
+            padding: 1rem 0;
         }
 
         .logo {
-            font-weight: 800;
-            letter-spacing: 0.08em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-decoration: none;
         }
 
-        .cta {
-            border: 0;
+        .logo-mark {
+            display: inline-grid;
+            place-items: center;
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 0.8rem;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            color: #04101d;
+            letter-spacing: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--soft);
+            font-size: 0.92rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            opacity: 0.88;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:focus-visible { opacity: 1; }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.9rem;
+            border: 1px solid transparent;
             border-radius: 999px;
-            padding: 0.65rem 1.1rem;
-            font-weight: 700;
-            color: #031018;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
-            cursor: pointer;
+            padding: 0.78rem 1.15rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+
+        .button:hover { transform: translateY(-1px); }
+
+        .button.primary {
+            background: linear-gradient(90deg, var(--blue), var(--cyan));
+            color: #04101d;
+        }
+
+        .button.secondary {
+            border-color: var(--border);
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text);
         }
 
         .hero {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: minmax(0, 1.15fr) minmax(19rem, 0.85fr);
             gap: 2rem;
             align-items: center;
-            padding: 5rem 0 4rem;
+            padding: clamp(4rem, 8vw, 7rem) 0 3.5rem;
+        }
+
+        .eyebrow {
+            margin: 0 0 1rem;
+            color: var(--cyan);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
         }
 
         h1 {
-            font-size: clamp(2rem, 5vw, 3.8rem);
-            line-height: 1.05;
-            margin: 0 0 1rem;
+            max-width: 13ch;
+            margin: 0 0 1.2rem;
+            font-size: clamp(2.8rem, 7vw, 5.8rem);
+            line-height: 0.94;
+            letter-spacing: -0.07em;
         }
 
-        .hero p {
-            color: var(--muted);
-            max-width: 58ch;
-            margin-bottom: 1.8rem;
+        .lead {
+            max-width: 62ch;
+            margin: 0 0 1.7rem;
+            color: var(--soft);
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
         }
 
-        .badges {
+        .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.65rem;
+            gap: 0.75rem;
         }
 
-        .badge {
-            border: 1px solid rgba(255,255,255,0.16);
-            color: #dbeafe;
-            padding: 0.4rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.9rem;
+        .hero-panel {
+            border: 1px solid var(--border);
+            border-radius: 1.6rem;
+            padding: 1.15rem;
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.055));
+            box-shadow: var(--shadow);
         }
 
-        .panel {
-            background: linear-gradient(165deg, rgba(96,165,250,0.14), rgba(34,211,238,0.05));
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px;
-            padding: 1.2rem;
+        .panel-card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            background: rgba(3, 10, 20, 0.32);
         }
 
-        .services {
-            padding: 2.5rem 0 4rem;
+        .panel-card + .panel-card { margin-top: 0.8rem; }
+
+        .panel-card strong {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: #ffffff;
         }
 
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
-        }
-
-        .card {
-            background: var(--surface-soft);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 14px;
-            padding: 1.2rem;
-        }
-
-        .card h3 {
-            margin: 0 0 0.35rem;
-            font-size: 1.1rem;
-        }
-
-        .card p {
+        .panel-card p {
             margin: 0;
             color: var(--muted);
-            font-size: 0.95rem;
+            font-size: 0.93rem;
         }
 
-        .section-title {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
+        .trust-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 4rem;
         }
 
-        footer {
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 2rem 0 2.5rem;
-            color: var(--muted);
+        .trust-strip span {
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.75rem 0.95rem;
+            background: rgba(255, 255, 255, 0.055);
+            color: var(--soft);
+            font-weight: 700;
             text-align: center;
         }
 
-        @media (max-width: 900px) {
-            .hero { grid-template-columns: 1fr; padding-top: 3rem; }
-            .services-grid { grid-template-columns: 1fr; }
+        .section {
+            padding: 1.5rem 0 5rem;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-heading h2 {
+            max-width: 13ch;
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1;
+            letter-spacing: -0.045em;
+        }
+
+        .section-heading p:last-child {
+            max-width: 44ch;
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .business-card {
+            min-height: 18rem;
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1.4rem;
+            border: 1px solid var(--border);
+            border-radius: 1.45rem;
+            padding: 1.25rem;
+            background: var(--surface);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+        }
+
+        .business-card.featured { grid-column: span 3; }
+
+        .business-card.rentals { grid-column: span 3; }
+
+        .business-card h3 {
+            margin: 0.9rem 0 0.55rem;
+            font-size: 1.45rem;
+            letter-spacing: -0.035em;
+        }
+
+        .business-card p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .status {
+            display: inline-flex;
+            width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 999px;
+            padding: 0.34rem 0.62rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--soft);
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .card-link {
+            display: inline-flex;
+            width: fit-content;
+            color: #ffffff;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .card-link:hover,
+        .card-link:focus-visible { text-decoration: underline; }
+
+        .accent-blue { border-top: 4px solid var(--blue); }
+        .accent-green { border-top: 4px solid var(--green); }
+        .accent-gold { border-top: 4px solid var(--gold); }
+        .accent-cyan { border-top: 4px solid var(--cyan); }
+        .accent-pink { border-top: 4px solid var(--pink); }
+
+        .contact-band {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 1.6rem;
+            margin-bottom: 4rem;
+            padding: clamp(1.2rem, 3vw, 2rem);
+            background: linear-gradient(120deg, rgba(93, 184, 255, 0.16), rgba(78, 228, 214, 0.08));
+        }
+
+        .contact-band h2 {
+            margin: 0 0 0.4rem;
+            font-size: clamp(1.6rem, 3vw, 2.35rem);
+            letter-spacing: -0.04em;
+        }
+
+        .contact-band p {
+            margin: 0;
+            color: var(--soft);
+        }
+
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 2rem 0 2.5rem;
+            color: var(--muted);
+        }
+
+        .footer-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links a { text-decoration: none; }
+        .footer-links a:hover { color: var(--text); }
+
+        @media (max-width: 920px) {
+            .nav-links { display: none; }
+            .hero,
+            .contact-band { grid-template-columns: 1fr; }
+            .trust-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .business-card,
+            .business-card.featured,
+            .business-card.rentals { grid-column: span 3; }
+        }
+
+        @media (max-width: 640px) {
+            .container { width: min(100% - 1rem, 1160px); }
+            .hero { padding-top: 3rem; }
+            .trust-strip,
+            .business-grid { grid-template-columns: 1fr; }
+            .business-card,
+            .business-card.featured,
+            .business-card.rentals { grid-column: span 1; }
+            .site-header .button { display: none; }
+            h1 { max-width: none; }
         }
     </style>
 </head>
@@ -164,57 +390,131 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header>
+    <header class="site-header">
         <div class="container nav">
-            <div class="logo">ZOOMI</div>
-            <button class="cta" onclick="window.location.href='mailto:hello@zoomi.co'">Book a discovery call</button>
+            <a class="logo" href="/" aria-label="ZOOMI home">
+                <span class="logo-mark">Z</span>
+                <span>ZOOMI</span>
+            </a>
+            <nav class="nav-links" aria-label="Business lines">
+                <a href="#businesses">Businesses</a>
+                <a href="https://gov.zoomi.co">Government</a>
+                <a href="https://rent.zoomi.co">Rentals</a>
+                <a href="mailto:hello@zoomi.co">Contact</a>
+            </nav>
+            <a class="button secondary" href="mailto:hello@zoomi.co">Contact Zoomi</a>
         </div>
     </header>
 
     <main class="container">
-        <section class="hero">
+        <section class="hero" aria-labelledby="page-title">
             <div>
-                <h1>Custom software that helps your business move faster.</h1>
-                <p>ZOOMI is a software development company that designs, builds, and scales web apps, mobile products, and internal systems tailored to your exact workflow. We partner with startups and growing teams to ship reliable products with measurable business impact.</p>
-                <div class="badges">
-                    <span class="badge">Web App Development</span>
-                    <span class="badge">Mobile Apps</span>
-                    <span class="badge">Product Strategy</span>
-                    <span class="badge">AI Integrations</span>
+                <p class="eyebrow">Zoomi LLC</p>
+                <h1 id="page-title">Practical business systems, built to move.</h1>
+                <p class="lead">Zoomi operates across government contracting, rentals, digital services, operations, and cyber readiness. The common thread is simple: clearer systems, accountable coordination, and practical execution.</p>
+                <div class="hero-actions">
+                    <a class="button primary" href="https://gov.zoomi.co">Visit Zoomi Government</a>
+                    <a class="button secondary" href="#businesses">See the businesses</a>
                 </div>
             </div>
-            <aside class="panel">
-                <h2>Why teams choose ZOOMI</h2>
-                <p>Senior engineering talent, clear communication, and a build process focused on outcomes—not just output.</p>
-                <ul>
-                    <li>Rapid prototyping in 2-4 weeks</li>
-                    <li>Production-ready software architecture</li>
-                    <li>Ongoing support and feature iteration</li>
-                </ul>
+            <aside class="hero-panel" aria-label="Zoomi operating model">
+                <div class="panel-card">
+                    <strong>One accountable point of contact</strong>
+                    <p>We coordinate the people, vendors, tools, and workstreams needed to get business done.</p>
+                </div>
+                <div class="panel-card">
+                    <strong>Built for practical execution</strong>
+                    <p>From bid tracking to rental workflows, Zoomi focuses on systems that support real operations.</p>
+                </div>
+                <div class="panel-card">
+                    <strong>Growing with discipline</strong>
+                    <p>New lanes, including cyber, are positioned carefully and backed by real capability-building.</p>
+                </div>
             </aside>
         </section>
 
-        <section class="services">
-            <h2 class="section-title">Our custom software services</h2>
-            <div class="services-grid">
-                <article class="card">
-                    <h3>End-to-End Product Development</h3>
-                    <p>From idea validation to launch, we build user-focused products that support growth and scalability.</p>
+        <div class="trust-strip" aria-label="Zoomi strengths">
+            <span>Government-ready operations</span>
+            <span>Rental workflows</span>
+            <span>Vendor coordination</span>
+            <span>Digital systems</span>
+        </div>
+
+        <section class="section" id="businesses" aria-labelledby="businesses-heading">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Business lines</p>
+                    <h2 id="businesses-heading">What Zoomi does.</h2>
+                </div>
+                <p>Each line is connected by the same operating philosophy: make the work easier to manage, easier to source, and easier to deliver.</p>
+            </div>
+
+            <div class="business-grid">
+                <article class="business-card featured accent-blue">
+                    <div>
+                        <span class="status">Active</span>
+                        <h3>Zoomi Government</h3>
+                        <p>Public-sector contracting, SAM opportunity tracking, vendor fulfillment, bid coordination, and practical support for government-ready operations.</p>
+                    </div>
+                    <a class="card-link" href="https://gov.zoomi.co">Open gov.zoomi.co →</a>
                 </article>
-                <article class="card">
-                    <h3>Legacy System Modernization</h3>
-                    <p>We upgrade outdated tools and workflows into secure, cloud-based platforms your team actually enjoys using.</p>
+
+                <article class="business-card rentals accent-green">
+                    <div>
+                        <span class="status">Active</span>
+                        <h3>Zoomi Rentals</h3>
+                        <p>Rental customer workflows, payment support, equipment and service rental operations, and a dedicated portal for managing the rental side of the business.</p>
+                    </div>
+                    <a class="card-link" href="https://rent.zoomi.co">Open rent.zoomi.co →</a>
                 </article>
-                <article class="card">
-                    <h3>Custom Internal Tools</h3>
-                    <p>Automate repetitive tasks, centralize operations, and improve decision making with software built for your business model.</p>
+
+                <article class="business-card accent-gold">
+                    <div>
+                        <span class="status">Active</span>
+                        <h3>Zoomi Digital</h3>
+                        <p>Websites, SEO, digital marketing, content systems, analytics, and AI-assisted workflows for teams that need sharper digital execution.</p>
+                    </div>
+                    <a class="card-link" href="mailto:hello@zoomi.co?subject=Zoomi%20Digital">Start a digital project →</a>
+                </article>
+
+                <article class="business-card accent-cyan">
+                    <div>
+                        <span class="status">Active</span>
+                        <h3>Zoomi Operations</h3>
+                        <p>Vendor sourcing, subcontractor coordination, service delivery support, and operating structure for work that needs one clear owner.</p>
+                    </div>
+                    <a class="card-link" href="mailto:hello@zoomi.co?subject=Zoomi%20Operations">Work with Zoomi →</a>
+                </article>
+
+                <article class="business-card accent-pink">
+                    <div>
+                        <span class="status">Building</span>
+                        <h3>Zoomi Cyber</h3>
+                        <p>Cyber readiness is an emerging lane focused on CMMC Level 1 foundations, security policies, risk support, and qualified partner-backed services.</p>
+                    </div>
+                    <a class="card-link" href="mailto:hello@zoomi.co?subject=Zoomi%20Cyber">Talk about cyber readiness →</a>
                 </article>
             </div>
+        </section>
+
+        <section class="contact-band" aria-labelledby="contact-heading">
+            <div>
+                <h2 id="contact-heading">Need one clear place to start?</h2>
+                <p>Send us the problem, opportunity, or workflow. We will route it to the right Zoomi business line.</p>
+            </div>
+            <a class="button primary" href="mailto:hello@zoomi.co">hello@zoomi.co</a>
         </section>
     </main>
 
     <footer>
-        © <span id="year"></span> ZOOMI · Custom Software Development Company
+        <div class="container footer-row">
+            <span>© <span id="year"></span> Zoomi LLC</span>
+            <div class="footer-links" aria-label="Zoomi links">
+                <a href="https://gov.zoomi.co">Government</a>
+                <a href="https://rent.zoomi.co">Rentals</a>
+                <a href="mailto:hello@zoomi.co">Contact</a>
+            </div>
+        </div>
     </footer>
 
     <script>
