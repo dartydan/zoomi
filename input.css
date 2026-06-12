@@ -449,6 +449,45 @@ html * {
   .us-watermark {
     display: none !important;
   }
+
+  /* Three.js Canvas Styles */
+  #glyphCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 600px;
+    max-height: 600px;
+    touch-action: none;
+  }
+
+  /* Hide canvas on mobile/tablet */
+  @media (max-width: 1023px) {
+    #glyphCanvas {
+      display: none;
+    }
+  }
+
+  /* Hide 3D Animation on Tablet and Mobile */
+  @media (max-width: 1023px) {
+    .hero-3d-container {
+      display: none;
+    }
+    
+    /* Center the hero content on mobile/tablet */
+    .text-center.lg\:text-left {
+      text-align: center !important;
+      margin: 0 auto;
+    }
+
+    /* Center the buttons on mobile/tablet */
+    .flex.flex-col.sm\:flex-row.gap-4.justify-center.lg\:justify-start {
+      justify-content: center !important;
+    }
+
+    /* Center the trust indicators on mobile/tablet */
+    .mt-12.flex.flex-wrap.justify-center.lg\:justify-start {
+      justify-content: center !important;
+    }
+  }
   
   /* Floating Circle Animations */
   .floating-circle-1 {

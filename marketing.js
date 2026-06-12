@@ -1,6 +1,224 @@
 // Marketing Page JavaScript with Tailwind CSS
 
-document.addEventListener('DOMContentLoaded', function() {
+// Glyph Animation Class
+class GlyphAnimation {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        this.glyph = null;
+        this.targetRotation = { x: 0, y: 0 };
+        this.currentRotation = { x: 0, y: 0 };
+        this.mouse = { x: 0, y: 0 };
+        
+        this.init();
+        this.setupEvents();
+        this.animate();
+    }
+    
+    init() {
+        console.log('Initializing Three.js scene...');
+        
+        // Setup renderer with proper pixel ratio
+        const pixelRatio = window.devicePixelRatio;
+        this.renderer.setPixelRatio(pixelRatio);
+        this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
+        this.renderer.setClearColor(0x000000, 0);
+        
+        // Setup camera
+        this.camera.position.set(2, 2, 3);
+        this.camera.lookAt(0, 0, 0);
+        
+        console.log('Renderer and camera setup complete');
+        
+        // Initial resize to ensure proper dimensions
+        this.handleResize();
+        
+        // Create glyph geometry
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        
+        // Parameters
+        const outerRadius = 1.2;
+        const innerRadius = 0.6;
+        const segments = 24;
+        const layers = 3;
+        const layerSpacing = 0.2;
+        
+        // Create layered circular pattern
+        for (let layer = 0; layer < layers; layer++) {
+            const layerZ = layer * layerSpacing;
+            const currentRadius = outerRadius - (layer * 0.2);
+            
+            // Outer circle for each layer
+            for (let i = 0; i < segments; i++) {
+                const theta1 = (i / segments) * Math.PI * 2;
+                const theta2 = ((i + 1) / segments) * Math.PI * 2;
+                
+                vertices.push(
+                    Math.cos(theta1) * currentRadius, Math.sin(theta1) * currentRadius, layerZ,
+                    Math.cos(theta2) * currentRadius, Math.sin(theta2) * currentRadius, layerZ
+                );
+                
+                // Add connecting spokes
+                if (layer < layers - 1) {
+                    vertices.push(
+                        Math.cos(theta1) * currentRadius, Math.sin(theta1) * currentRadius, layerZ,
+                        Math.cos(theta1) * currentRadius, Math.sin(theta1) * currentRadius, layerZ + layerSpacing
+                    );
+                }
+            }
+            
+            // Create hexagonal pattern
+            const innerPoints = 6;
+            for (let i = 0; i < innerPoints; i++) {
+                const theta1 = (i / innerPoints) * Math.PI * 2;
+                const theta2 = ((i + 1) / innerPoints) * Math.PI * 2;
+                const r = innerRadius - (layer * 0.1);
+                
+                vertices.push(
+                    Math.cos(theta1) * r, Math.sin(theta1) * r, layerZ,
+                    Math.cos(theta2) * r, Math.sin(theta2) * r, layerZ,
+                    0, 0, layerZ,
+                    Math.cos(theta1) * r, Math.sin(theta1) * r, layerZ
+                );
+                
+                // Add diagonal connectors
+                if (i % 2 === 0) {
+                    vertices.push(
+                        Math.cos(theta1) * r, Math.sin(theta1) * r, layerZ,
+                        Math.cos(theta1) * currentRadius, Math.sin(theta1) * currentRadius, layerZ
+                    );
+                }
+            }
+        }
+        
+        // Add central connecting lines
+        for (let i = 0; i < 6; i++) {
+            const theta = (i / 6) * Math.PI * 2;
+            vertices.push(
+                0, 0, 0,
+                Math.cos(theta) * outerRadius * 0.7, Math.sin(theta) * outerRadius * 0.7, layers * layerSpacing
+            );
+        }
+        
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        
+        console.log('Creating materials...');
+        
+        // Create materials with brighter colors and thicker lines
+        const glowMaterial = new THREE.LineBasicMaterial({
+            color: 0xff99dd,
+            linewidth: 4,
+            transparent: true,
+            opacity: 0.4
+        });
+
+        const mainMaterial = new THREE.LineBasicMaterial({
+            color: 0xff3399, // Brighter primary color
+            linewidth: 3,
+            transparent: true,
+            opacity: 1
+        });
+
+        // Create glow effect
+        const glowMesh = new THREE.LineSegments(geometry, glowMaterial);
+        glowMesh.scale.multiplyScalar(1.1);
+        this.scene.add(glowMesh);
+        this.glowMesh = glowMesh;
+        
+        // Create main mesh
+        this.glyph = new THREE.LineSegments(geometry, mainMaterial);
+        this.scene.add(this.glyph);
+        
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        this.scene.add(ambientLight);
+        
+        // Add point light
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        this.scene.add(pointLight);
+    }
+    
+    handleResize() {
+        const width = this.canvas.clientWidth;
+        const height = this.canvas.clientHeight;
+        const pixelRatio = window.devicePixelRatio;
+
+        this.canvas.width = width * pixelRatio;
+        this.canvas.height = height * pixelRatio;
+        
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height, false);
+    }
+
+    setupEvents() {
+        window.addEventListener('mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            this.targetRotation.y = this.mouse.x * Math.PI / 3;
+            this.targetRotation.x = this.mouse.y * Math.PI / 3;
+        });
+        
+        window.addEventListener('resize', () => this.handleResize());
+    }
+    
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        
+        // Smooth rotation
+        this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.05;
+        this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.05;
+        
+        if (this.glyph && this.glowMesh) {
+            const time = Date.now() * 0.001;
+            
+            // Update main glyph with more dynamic rotation
+            this.glyph.rotation.x = this.currentRotation.x + Math.sin(time * 0.5) * 0.1;
+            this.glyph.rotation.y = this.currentRotation.y + Math.cos(time * 0.3) * 0.1;
+            this.glyph.rotation.z += 0.002;
+            
+            // Add slight position animation
+            this.glyph.position.y = Math.sin(time) * 0.1;
+            
+            // Sync glow mesh
+            this.glowMesh.rotation.copy(this.glyph.rotation);
+            this.glowMesh.position.copy(this.glyph.position);
+            
+            // Enhanced glow effect
+            const pulseScale = 1.15 + Math.sin(time * 2) * 0.1;
+            this.glowMesh.scale.setScalar(pulseScale);
+        }
+        
+        this.renderer.render(this.scene, this.camera);
+    }
+}
+
+// Initialize animation when the page loads
+window.addEventListener('load', function() {
+    console.log('Page loaded, initializing Three.js animation...');
+    
+    // Initialize Glyph Animation
+    const canvas = document.getElementById('glyphCanvas');
+    console.log('Canvas element:', canvas);
+    console.log('Canvas dimensions:', canvas.clientWidth, 'x', canvas.clientHeight);
+    
+    if (canvas) {
+        try {
+            window.glyphAnimation = new GlyphAnimation(canvas);
+            console.log('Animation initialized successfully');
+        } catch (error) {
+            console.error('Error initializing animation:', error);
+            console.error('Error details:', error.stack);
+        }
+    } else {
+        console.error('Canvas element not found!');
+    }
     console.log('DOM loaded, initializing marketing page...');
 
     // Dark mode functionality
