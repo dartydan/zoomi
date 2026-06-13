@@ -15,8 +15,10 @@ The four businesses:
 ## Experience
 
 - **Desktop** — an interactive 3D space (three.js): a glowing "Z" core with four
-  orbiting business "satellites" you can hover and click, an OS menu bar, a dock,
-  and draggable app windows. Mouse parallax drives a gentle look-around.
+  orbiting business "satellites" you can hover and click, plus an OS menu bar,
+  left-hand desktop icons, a dock, and draggable app windows. Each business is
+  reachable from the desktop icons, the dock, the menu bar, or its 3D satellite.
+  Mouse parallax drives a gentle look-around.
 - **Mobile** — a phone-OS home screen: status bar, app tiles, and full-screen
   app sheets that slide up, over a lightweight 3D wallpaper.
 - **Boot sequence** — a short "ZoomiOS" boot animation on load.

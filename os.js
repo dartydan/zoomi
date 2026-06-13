@@ -20,6 +20,7 @@ const BUSINESSES = [
         domain: 'audit.zoomi.co',
         url: 'https://audit.zoomi.co',
         glyph: '📈',
+        favicon: 'https://audit.zoomi.co/favicon.ico',
         accent: '#5db8ff',
         status: 'Live',
         tagline: 'Digital marketing & SEO',
@@ -31,6 +32,7 @@ const BUSINESSES = [
         domain: 'gov.zoomi.co',
         url: 'https://gov.zoomi.co',
         glyph: '🏛️',
+        favicon: 'https://gov.zoomi.co/icon.png',
         accent: '#f8d778',
         status: 'SAM active',
         tagline: 'Government contracting',
@@ -42,6 +44,7 @@ const BUSINESSES = [
         domain: 'margin.zoomi.co',
         url: 'https://margin.zoomi.co',
         glyph: '📖',
+        favicon: null,
         accent: '#f0a3ff',
         status: 'Bible app',
         tagline: 'Scripture, with room to think',
@@ -53,6 +56,7 @@ const BUSINESSES = [
         domain: 'rent.zoomi.co',
         url: 'https://rent.zoomi.co',
         glyph: '🌀',
+        favicon: 'https://rent.zoomi.co/icon.png',
         accent: '#85e0a3',
         status: 'Live',
         tagline: 'Washer & dryer rentals',
@@ -64,14 +68,37 @@ const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_MOBILE = window.matchMedia('(max-width: 820px)').matches;
 const byId = (id) => BUSINESSES.find((b) => b.id === id);
 
+// Mobile app-icon content: the site's real favicon, falling back to the emoji
+// glyph if the business has none (margin) or the image fails to load.
+function iconInner(b) {
+    if (!b.favicon) return `<span aria-hidden="true">${b.glyph}</span>`;
+    return `<img class="favicon" src="${b.favicon}" alt="" referrerpolicy="no-referrer"`
+        + ` onload="if(this.naturalWidth&&this.naturalWidth<64)this.closest('.ico').classList.add('ico-small')"`
+        + ` onerror="this.remove();this.closest('.ico').classList.add('ico-fallback')">`
+        + `<span class="glyph-fallback" aria-hidden="true">${b.glyph}</span>`;
+}
+
 /* ============================================================
    1. UI CONSTRUCTION (dock, windows, app grid, sheets)
    ============================================================ */
 function buildDesktopUI() {
     const dock = document.getElementById('dock');
     const windows = document.getElementById('windows');
+    const desk = document.getElementById('desktopIcons');
 
     BUSINESSES.forEach((b, i) => {
+        // Desktop icon (top-left, like a real OS desktop)
+        const di = document.createElement('button');
+        di.className = 'desk-icon';
+        di.type = 'button';
+        di.dataset.id = b.id;
+        di.setAttribute('aria-label', `Open ${b.name} — ${b.tagline}`);
+        di.innerHTML = `
+            <span class="ico" aria-hidden="true" style="background:linear-gradient(150deg, ${b.accent}, ${b.accent}99)">${b.glyph}</span>
+            <span class="label">${b.name}</span>`;
+        di.addEventListener('click', () => openWindow(b.id));
+        desk.appendChild(di);
+
         // Dock icon
         const app = document.createElement('button');
         app.className = 'dock-app';
@@ -135,7 +162,7 @@ function buildMobileUI() {
         tile.dataset.id = b.id;
         tile.setAttribute('aria-label', `Open ${b.name} — ${b.tagline}`);
         tile.innerHTML = `
-            <span class="ico" aria-hidden="true" style="background:linear-gradient(150deg, ${b.accent}, ${b.accent}99)">${b.glyph}</span>
+            <span class="ico" style="background:linear-gradient(150deg, ${b.accent}, ${b.accent}99)">${iconInner(b)}</span>
             <span class="name">${b.name}</span>
             <span class="sub">${b.tagline}</span>`;
         tile.addEventListener('click', () => openSheet(b.id));
@@ -150,7 +177,7 @@ function buildMobileUI() {
             <div class="sheet-grab" aria-hidden="true"></div>
             <button class="sheet-close" type="button" aria-label="Close ${b.name}">✕</button>
             <div class="sheet-body">
-                <span class="ico" aria-hidden="true" style="background:linear-gradient(150deg, ${b.accent}, ${b.accent}99)">${b.glyph}</span>
+                <span class="ico" style="background:linear-gradient(150deg, ${b.accent}, ${b.accent}99)">${iconInner(b)}</span>
                 <span class="badge" style="color:${b.accent}">${b.status}</span>
                 <h2>${b.name}</h2>
                 <p class="tagline" style="color:${b.accent}">${b.tagline}</p>
@@ -555,18 +582,27 @@ function runBoot(onDone) {
 }
 
 function revealOS() {
+    if (REDUCED) return;
+    const targets = IS_MOBILE
+        ? ['.app-tile', '.phone-hero > *']
+        : ['.desk-icon', '.dock-app', '.stage-hint > *'];
+
+    // Reveals "pop in place" (scale + opacity) rather than sliding in from
+    // outside their container, so any mid-animation frame still looks correct.
     if (IS_MOBILE) {
-        if (!REDUCED) {
-            gsap.from('.app-tile', { y: 24, opacity: 0, stagger: 0.07, duration: 0.5, ease: 'back.out(1.5)' });
-            gsap.from('.phone-hero > *', { y: 16, opacity: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out' });
-        }
+        gsap.from('.app-tile', { scale: 0.8, opacity: 0, stagger: 0.07, duration: 0.5, ease: 'back.out(1.6)', transformOrigin: 'center' });
+        gsap.from('.phone-hero > *', { y: 16, opacity: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out' });
     } else {
-        if (!REDUCED) {
-            gsap.from('.dock-app', { y: 30, opacity: 0, stagger: 0.08, duration: 0.55, ease: 'back.out(1.7)', delay: 0.1 });
-            gsap.from('.stage-hint > *', { y: 14, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'power2.out', delay: 0.25 });
-            gsap.from(camera.position, { z: 16, duration: 1.4, ease: 'power3.out' });
-        }
+        gsap.from('.desk-icon', { scale: 0.7, opacity: 0, stagger: 0.06, duration: 0.45, ease: 'back.out(1.7)', transformOrigin: 'center', delay: 0.05 });
+        gsap.from('.dock-app', { scale: 0.5, opacity: 0, stagger: 0.07, duration: 0.5, ease: 'back.out(2)', transformOrigin: 'center bottom', delay: 0.1 });
+        gsap.from('.stage-hint > *', { y: 14, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'power2.out', delay: 0.25 });
+        gsap.from(camera.position, { z: 16, duration: 1.4, ease: 'power3.out' });
     }
+
+    // Safety net: if the rAF ticker stalls (e.g. background-tab load), these
+    // .from() tweens could strand elements mid-transform. Force the natural
+    // resting state once the animations would have finished, regardless.
+    setTimeout(() => gsap.set(targets, { clearProps: 'transform,opacity' }), 1500);
 }
 
 function boot() {

@@ -217,6 +217,58 @@ html.js .os { display: block; }
     color: var(--muted);
 }
 
+/* Desktop icons (top-left, like a real OS desktop) */
+.desktop-icons {
+    position: fixed;
+    top: 3.4rem;
+    left: 1rem;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.desk-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    width: 5.4rem;
+    padding: 0.5rem 0.35rem;
+    border: 1px solid transparent;
+    border-radius: 0.85rem;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+.desk-icon:hover,
+.desk-icon:focus-visible {
+    outline: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border);
+}
+.desk-icon:active { transform: scale(0.97); }
+.desk-icon .ico {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.8rem;
+    font-size: 1.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+.desk-icon .label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--soft);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
 /* Floating hover label over a 3D object */
 .hover-label {
     position: fixed;
@@ -252,7 +304,7 @@ html.js .os { display: block; }
     transform: translateX(-50%);
     z-index: 30;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 0.55rem;
     padding: 0.6rem 0.75rem;
     border-radius: 1.35rem;
@@ -499,8 +551,28 @@ html.js .os { display: block; }
     width: 3rem; height: 3rem;
     border-radius: 0.95rem;
     font-size: 1.55rem;
+    overflow: hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
+
+/* Favicon-as-app-icon (mobile tiles + sheets) */
+.ico .favicon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+}
+/* Tiny favicons (e.g. a 16px favicon.ico) sit centered on the gradient as a
+   badge instead of being upscaled full-bleed and blurry. */
+.ico.ico-small .favicon {
+    width: 62%;
+    height: 62%;
+    object-fit: contain;
+    border-radius: 0;
+}
+.ico .glyph-fallback { display: none; }
+.ico.ico-fallback .glyph-fallback { display: block; }
 .app-tile .name {
     font-weight: 800;
     letter-spacing: -0.01em;
@@ -572,6 +644,7 @@ html.js .os { display: block; }
     border-radius: 1.4rem;
     font-size: 2.4rem;
     margin-bottom: 1.1rem;
+    overflow: hidden;
     box-shadow: 0 14px 40px rgba(0,0,0,0.4);
 }
 .sheet-body .badge {
