@@ -1,8 +1,29 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://www.zoomi.co/sitemap.xml
+# AI search and answer engines
+User-agent: GPTBot
+Allow: /
 
-# Crawl-delay
-Crawl-delay: 1
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://zoomi.co/sitemap.xml

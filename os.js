@@ -75,4 +75,44 @@ if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
     animateGlow();
 }
 
+const heroVideo = document.querySelector('.art-video');
+
+const filmPlay = document.querySelector('.film-play');
+
+const syncFilmPlay = () => {
+    if (filmPlay) filmPlay.textContent = heroVideo.paused ? 'Play' : 'Pause';
+};
+
+if (heroVideo) {
+    heroVideo.addEventListener('play', syncFilmPlay);
+    heroVideo.addEventListener('pause', syncFilmPlay);
+    syncFilmPlay();
+}
+
+if (heroVideo && filmPlay) {
+    filmPlay.addEventListener('click', () => {
+        if (heroVideo.paused) heroVideo.play().catch(() => {});
+        else heroVideo.pause();
+    });
+}
+
+if (heroVideo && !reduceMotion) {
+    heroVideo.play().catch(() => {});
+}
+
+const filmSound = document.querySelector('.film-sound');
+
+if (heroVideo && filmSound) {
+    filmSound.addEventListener('click', () => {
+        const on = heroVideo.muted;
+        heroVideo.muted = !on;
+        if (on) {
+            heroVideo.currentTime = 0;
+            heroVideo.play().catch(() => {});
+        }
+        filmSound.setAttribute('aria-pressed', String(on));
+        filmSound.textContent = on ? 'Sound: on' : 'Sound: off';
+    });
+}
+
 document.querySelector('#year').textContent = new Date().getFullYear();

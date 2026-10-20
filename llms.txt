@@ -1,0 +1,25 @@
+# Zoomi
+
+> Zoomi (Zoomi, LLC) is a design-led marketing company based in Indiana, USA. It designs brand identities and websites, plans marketing strategy, and manages search visibility with its own SEO software, Zoomi Audit.
+
+## Services
+
+- Brand identity: logo and identity systems, brand guidelines, messaging and voice.
+- Websites: design and build, landing pages, technical SEO foundations.
+- Strategy and growth: positioning, marketing roadmaps, analytics and reporting.
+
+## Software
+
+- [Zoomi Audit](https://audit.zoomi.co): SEO software that monitors site health, tracks keywords and rankings, and produces a prioritized list of fixes. It can be added to any Zoomi marketing engagement.
+
+## Contact
+
+- Email: hello@zoomi.co
+- Website: https://zoomi.co/
+- Founded: 2023
+
+## Other Zoomi companies
+
+- [Zoomi Government](https://gov.zoomi.co): government contracting and vendor fulfillment.
+- [Margin](https://margin.zoomi.co): a Bible-reading app.
+- [Zoomi Rentals](https://rent.zoomi.co): delivered and serviced washer and dryer rentals.
