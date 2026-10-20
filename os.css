@@ -794,6 +794,10 @@ img {
     grid-template-columns: 3fr 1.4fr;
 }
 
+.section-head h2.one-line {
+    white-space: nowrap;
+}
+
 .section-head > p:last-child {
     max-width: 18rem;
     margin: 0;
@@ -1859,7 +1863,8 @@ img {
         margin-left: 17%;
     }
 
-    .section-head--right h2 {
+    .section-head--right h2,
+    .section-head h2.one-line {
         font-size: clamp(2.8rem, 13.5vw, 6rem);
     }
 
