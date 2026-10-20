@@ -32,6 +32,7 @@ export interface PageResult {
   links: string[];
 }
 export interface Audit {
+  rulesetVersion?: number;
   id: string;
   url: string;
   createdAt: string;
@@ -50,7 +51,8 @@ export type Section =
   | "Content studio"
   | "Competitors"
   | "Progress"
-  | "Connections";
+  | "Connections"
+  | "Automation";
 
 export interface AuditSummary
   extends Pick<Audit, "id" | "url" | "createdAt" | "score"> {

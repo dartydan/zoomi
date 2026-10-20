@@ -25,6 +25,9 @@ await db
     "INSERT INTO projects VALUES(@id,@owner_id,@name,@url,@verification_token,@verified_at,@created_at)",
   )
   .run(project);
+await db
+  .prepare("INSERT INTO billing(owner_id,status,updated_at) VALUES(?,?,?)")
+  .run("owner", "active", now);
 after(async () => {
   await db.close();
   rmSync(dir, { recursive: true, force: true });
@@ -147,4 +150,25 @@ test("sitemap indexes resume across batches without dropping later sitemap files
     });
   assert.equal(batch.done, true);
   assert.equal(batch.audit?.pages.length, 4);
+});
+
+test("a queued audit stops before network work if its subscription was cancelled", async () => {
+  const job = await enqueue("owner", project, 100);
+  await db
+    .prepare("UPDATE billing SET status='inactive' WHERE owner_id='owner'")
+    .run();
+  let calls = 0;
+  assert.equal(
+    await runBatch(job.id, async (...args) => {
+      calls++;
+      return fetcher(...args);
+    }),
+    "done",
+  );
+  assert.equal(calls, 0);
+  const saved = await db
+    .prepare("SELECT status,error FROM jobs WHERE id=?")
+    .get(job.id);
+  assert.equal(saved.status, "failed");
+  assert.match(saved.error, /active subscription/);
 });

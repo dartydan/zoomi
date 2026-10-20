@@ -10,6 +10,8 @@ import { verifySite } from "./verification.ts";
 import * as google from "./google.ts";
 import * as billing from "./billing.ts";
 import * as research from "./research.ts";
+import { listSchedules, saveSchedule } from "./schedules";
+import { compareAudits, type ChangeStatus } from "./comparison";
 import type { Audit } from "../src/types.ts";
 if (!production) await migrateAuth();
 export const app = express();
@@ -215,6 +217,79 @@ app.post("/api/projects/:projectId/verify", async (_req, res) => {
     .run(new Date().toISOString(), p.id, res.locals.user.id);
   res.json(projectView((await ownedProject(res.locals.user.id, p.id))!));
 });
+app.get("/api/projects/:projectId/schedules", async (_req, res) =>
+  res.json(await listSchedules(res.locals.user.id, res.locals.project.id)),
+);
+app.put("/api/projects/:projectId/schedules/:kind", async (req, res) => {
+  const kind = String(req.params.kind);
+  if (kind !== "audit" && kind !== "google")
+    return res.status(400).json({ error: "Unknown schedule." });
+  res.json(
+    await saveSchedule(
+      res.locals.user.id,
+      res.locals.project.id,
+      kind,
+      req.body,
+    ),
+  );
+});
+app.get("/api/projects/:projectId/automation-runs", async (_req, res) =>
+  res.json(
+    await db
+      .prepare(
+        'SELECT id,kind,status,error,created_at AS "createdAt",updated_at AS "updatedAt" FROM automation_runs WHERE owner_id=? AND project_id=? ORDER BY created_at DESC LIMIT 20',
+      )
+      .all(res.locals.user.id, res.locals.project.id),
+  ),
+);
+app.get("/api/projects/:projectId/audits/:id/changes", async (req, res) => {
+  const current = await db
+    .prepare(
+      "SELECT data,created_at FROM audits WHERE id=? AND project_id=? AND owner_id=?",
+    )
+    .get(req.params.id, res.locals.project.id, res.locals.user.id);
+  if (!current) return res.status(404).json({ error: "Audit not found." });
+  const prior = req.query.previous
+    ? await db
+        .prepare(
+          "SELECT data FROM audits WHERE id=? AND project_id=? AND owner_id=? AND created_at<?",
+        )
+        .get(
+          String(req.query.previous),
+          res.locals.project.id,
+          res.locals.user.id,
+          current.created_at,
+        )
+    : await db
+        .prepare(
+          "SELECT data FROM audits WHERE project_id=? AND owner_id=? AND created_at<? ORDER BY created_at DESC LIMIT 1",
+        )
+        .get(res.locals.project.id, res.locals.user.id, current.created_at);
+  if (!prior) {
+    if (req.query.previous)
+      return res.status(404).json({ error: "Earlier audit not found." });
+    return res.json(null);
+  }
+  const comparison = compareAudits(
+    JSON.parse(prior.data),
+    JSON.parse(current.data),
+  );
+  const status = String(req.query.status ?? "resolved") as ChangeStatus;
+  const offset = Number(req.query.offset ?? 0);
+  if (
+    !["resolved", "new", "persisting", "unverified"].includes(status) ||
+    !Number.isInteger(offset) ||
+    offset < 0
+  )
+    return res.status(400).json({ error: "Choose a valid comparison page." });
+  const changes = comparison.changes.filter((c) => c.status === status);
+  res.json({
+    ...comparison,
+    changes: changes.slice(offset, offset + 100),
+    offset,
+    next: offset + 100 < changes.length ? offset + 100 : null,
+  });
+});
 app.get("/api/projects/:projectId/audits", async (_req, res) => {
   // Keep history small even when each saved crawl contains thousands of pages.
   res.json(
@@ -258,8 +333,7 @@ app.get("/api/projects/:projectId/audits/:id", async (req, res) => {
       "SELECT data FROM audits WHERE owner_id=? AND project_id=? AND id=?",
     )
     .get(res.locals.user.id, res.locals.project.id, req.params.id)) as
-    | { data: string }
-    | undefined;
+    { data: string } | undefined;
   if (!row) return res.status(404).json({ error: "Audit not found." });
   if (Buffer.byteLength(row.data) > 2000000)
     return res
@@ -327,8 +401,7 @@ app.patch(
           "SELECT data FROM audits WHERE id=? AND project_id=? AND owner_id=?",
         )
         .get(req.params.id, res.locals.project.id, res.locals.user.id)) as
-        | { data: string }
-        | undefined;
+        { data: string } | undefined;
       if (!row) return { status: 404, body: { error: "Audit not found." } };
       const audit = JSON.parse(row.data) as Audit;
       if (
@@ -394,15 +467,20 @@ app.delete("/api/projects/:projectId/connections/google", async (_req, res) => {
   await google.disconnect(res.locals.user.id, res.locals.project.id);
   res.json({ disconnected: true });
 });
-app.post("/api/projects/:projectId/connections/sync", async (_req, res) =>
-  res.json(await google.syncMetrics(res.locals.user.id, res.locals.project)),
-);
+app.post("/api/projects/:projectId/connections/sync", async (_req, res) => {
+  if (!(await billing.entitled(res.locals.user.id)))
+    return res
+      .status(402)
+      .json({
+        error: "An active subscription is required to refresh Google data.",
+      });
+  res.json(await google.syncMetrics(res.locals.user.id, res.locals.project));
+});
 app.get("/api/projects/:projectId/metrics", async (_req, res) => {
   const row = (await db
     .prepare("SELECT data FROM metrics WHERE project_id=? AND owner_id=?")
     .get(res.locals.project.id, res.locals.user.id)) as
-    | { data: string }
-    | undefined;
+    { data: string } | undefined;
   res.json(row ? JSON.parse(row.data) : null);
 });
 app.get("/api/projects/:projectId/research", async (_req, res) =>

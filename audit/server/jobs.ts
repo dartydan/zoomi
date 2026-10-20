@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db, type ProjectRow } from "./database.ts";
 import { crawlBatch, type CrawlState } from "./crawler.ts";
 import { limits } from "./config.ts";
+import { entitled } from "./billing.ts";
 import { safeFetch } from "./network.ts";
 export interface Job {
   id: string;
@@ -29,7 +30,12 @@ export const jobView = (j: Job) => ({
   createdAt: j.created_at,
   updatedAt: j.updated_at,
 });
-export async function enqueue(owner: string, p: ProjectRow, pageLimit: number) {
+export async function enqueue(
+  owner: string,
+  p: ProjectRow,
+  pageLimit: number,
+  now = new Date(),
+) {
   return db.transaction(async () => {
     if (
       await db
@@ -41,7 +47,7 @@ export async function enqueue(owner: string, p: ProjectRow, pageLimit: number) {
       throw new Error(
         "Your existing audit must finish before starting another.",
       );
-    const start = new Date();
+    const start = new Date(now);
     start.setUTCDate(1);
     start.setUTCHours(0, 0, 0, 0);
     const used = await db
@@ -61,8 +67,8 @@ export async function enqueue(owner: string, p: ProjectRow, pageLimit: number) {
       discovered: 0,
       checkpoint: null,
       error: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
     };
     await db
       .prepare(
@@ -104,6 +110,10 @@ export async function runBatch(
       .get(job.project_id, job.owner_id)) as ProjectRow | undefined;
     if (!p?.verified_at)
       throw new Error("Website ownership must be verified before crawling.");
+    if (!(await entitled(job.owner_id)))
+      throw new Error(
+        "An active subscription is required to continue this audit. Your saved progress is preserved.",
+      );
     let savedAt = 0;
     const save = async (state: CrawlState) => {
       const changed = await db

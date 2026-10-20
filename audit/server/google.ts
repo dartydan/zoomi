@@ -3,7 +3,7 @@ import {
   CodeChallengeMethod,
   type Credentials,
 } from "google-auth-library";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { db, type ProjectRow } from "./database.ts";
 import { appUrl } from "./config.ts";
 import { seal, unseal, hash } from "./crypto.ts";
@@ -22,6 +22,7 @@ interface Connection {
   gsc_site: string | null;
   ga_property: string | null;
   updated_at: string;
+  revision: string;
 }
 export async function connection(owner: string, project: string) {
   return (await db
@@ -78,8 +79,7 @@ export async function completeAuthorization(
       "DELETE FROM oauth_states WHERE state_hash=? AND owner_id=? AND session_id=? AND expires_at>? RETURNING *",
     )
     .get(hash(state), owner, session, Date.now())) as
-    | { project_id: string; verifier: string }
-    | undefined;
+    { project_id: string; verifier: string } | undefined;
   if (!row)
     throw new Error(
       "This connection request expired. Start again from your website’s Connections page.",
@@ -93,14 +93,22 @@ export async function completeAuthorization(
     throw new Error(
       "Google did not grant ongoing access. Reconnect and allow access to the selected services.",
     );
-  await db
-    .prepare(
-      "INSERT INTO connections(project_id,owner_id,tokens,updated_at) VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET tokens=excluded.tokens,gsc_site=NULL,ga_property=NULL,updated_at=excluded.updated_at",
-    )
-    .run(row.project_id, owner, seal(tokens), new Date().toISOString());
-  await db
-    .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
-    .run(row.project_id, owner);
+  await db.transaction(async () => {
+    await db
+      .prepare(
+        "INSERT INTO connections(project_id,owner_id,tokens,updated_at,revision) VALUES(?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET tokens=excluded.tokens,gsc_site=NULL,ga_property=NULL,updated_at=excluded.updated_at,revision=excluded.revision",
+      )
+      .run(
+        row.project_id,
+        owner,
+        seal(tokens),
+        new Date().toISOString(),
+        randomUUID(),
+      );
+    await db
+      .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+      .run(row.project_id, owner);
+  }, `connection:${row.project_id}`)();
   return row.project_id;
 }
 export async function googleClient(owner: string, project: string) {
@@ -211,6 +219,8 @@ export async function bindProperties(
   gsc?: string,
   ga?: string,
 ) {
+  const original = await connection(owner, p.id);
+  if (!original) throw new Error("Connect your Google account first.");
   const available = await properties(owner, p);
   const oauth = await googleClient(owner, p.id);
   if (gsc && !available.searchConsole.some((s) => s.siteUrl === gsc))
@@ -243,28 +253,50 @@ export async function bindProperties(
       );
   }
   if (!gsc && !ga) throw new Error("Select at least one property.");
-  await db
-    .prepare(
-      "UPDATE connections SET gsc_site=?,ga_property=?,updated_at=? WHERE project_id=? AND owner_id=?",
-    )
-    .run(gsc ?? null, ga ?? null, new Date().toISOString(), p.id, owner);
-  if (
-    gsc &&
-    available.searchConsole.some(
-      (s) =>
-        s.siteUrl === gsc &&
-        ["siteOwner", "siteFullUser"].includes(s.permissionLevel),
-    )
-  )
+  await db.transaction(async () => {
+    const changed = await db
+      .prepare(
+        "UPDATE connections SET gsc_site=?,ga_property=?,updated_at=?,revision=? WHERE project_id=? AND owner_id=? AND revision=?",
+      )
+      .run(
+        gsc ?? null,
+        ga ?? null,
+        new Date().toISOString(),
+        randomUUID(),
+        p.id,
+        owner,
+        original.revision,
+      );
+    if (!changed.changes)
+      throw new Error(
+        "Your Google connection changed. Reload Connections and choose your properties again.",
+      );
     await db
-      .prepare("UPDATE projects SET verified_at=? WHERE id=? AND owner_id=?")
-      .run(new Date().toISOString(), p.id, owner);
+      .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+      .run(p.id, owner);
+    if (
+      gsc &&
+      available.searchConsole.some(
+        (s) =>
+          s.siteUrl === gsc &&
+          ["siteOwner", "siteFullUser"].includes(s.permissionLevel),
+      )
+    ) {
+      await db
+        .prepare("UPDATE projects SET verified_at=? WHERE id=? AND owner_id=?")
+        .run(new Date().toISOString(), p.id, owner);
+    }
+  }, `connection:${p.id}`)();
 }
-export async function syncMetrics(owner: string, p: ProjectRow) {
+export async function syncMetrics(
+  owner: string,
+  p: ProjectRow,
+  requester?: Pick<OAuth2Client, "request">,
+) {
   const c = await connection(owner, p.id);
   if (!c?.gsc_site && !c?.ga_property)
     throw new Error("Choose the properties to connect first.");
-  const oauth = await googleClient(owner, p.id);
+  const oauth = requester ?? (await googleClient(owner, p.id));
   const daysAgo = (n: number) =>
     new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
   const result: Record<string, unknown> = {
@@ -350,29 +382,55 @@ export async function syncMetrics(owner: string, p: ProjectRow) {
   result.errors = errors;
   if (!result.searchConsole && !result.analytics)
     throw new Error(errors.join(" "));
-  await db
-    .prepare(
-      "INSERT INTO metrics VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET data=excluded.data,synced_at=excluded.synced_at",
-    )
-    .run(p.id, owner, JSON.stringify(result), new Date().toISOString());
-  return result;
-}
-export async function disconnect(owner: string, project: string) {
-  const c = await connection(owner, project);
-  if (c) {
-    const oauth = await googleClient(owner, project);
-    try {
-      await oauth.revokeCredentials();
-    } catch {
-      /* Local removal always completes, even if the grant is already revoked. */
+  // Serialize the final write with reconnect, rebind and disconnect. The network
+  // requests stay outside the transaction; a stale refresh cannot restore data.
+  return db.transaction(async () => {
+    const current = await connection(owner, p.id);
+    if (!current || current.revision !== c.revision)
+      throw new Error(
+        "This connection changed during the refresh. Choose your properties and try again.",
+      );
+    const saved = await db
+      .prepare(
+        `INSERT INTO metrics(project_id,owner_id,data,synced_at) VALUES(?,?,?,?)
+      ON CONFLICT(project_id) DO UPDATE SET data=excluded.data,synced_at=excluded.synced_at WHERE metrics.synced_at<excluded.synced_at`,
+      )
+      .run(p.id, owner, JSON.stringify(result), result.syncedAt);
+    if (!saved.changes) {
+      const latest = await db
+        .prepare("SELECT data FROM metrics WHERE project_id=? AND owner_id=?")
+        .get(p.id, owner);
+      if (latest) return JSON.parse(latest.data) as Record<string, unknown>;
     }
-    await db.transaction(async () => {
-      await db
-        .prepare("DELETE FROM connections WHERE project_id=? AND owner_id=?")
-        .run(project, owner);
-      await db
-        .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
-        .run(project, owner);
-    })();
+    return result;
+  }, `connection:${p.id}`)();
+}
+export async function disconnect(
+  owner: string,
+  project: string,
+  revoke?: (credentials: Credentials) => Promise<void>,
+) {
+  const removed = await db.transaction(async () => {
+    const c = await connection(owner, project);
+    await db
+      .prepare("DELETE FROM connections WHERE project_id=? AND owner_id=?")
+      .run(project, owner);
+    await db
+      .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+      .run(project, owner);
+    return c;
+  }, `connection:${project}`)();
+  if (removed) {
+    try {
+      const credentials = unseal<Credentials>(removed.tokens);
+      if (revoke) await revoke(credentials);
+      else {
+        const oauth = client();
+        oauth.setCredentials(credentials);
+        await oauth.revokeCredentials();
+      }
+    } catch {
+      /* Local removal has already completed, even when Google is unavailable. */
+    }
   }
 }

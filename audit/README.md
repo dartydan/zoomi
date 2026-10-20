@@ -31,10 +31,12 @@ npm start       # serve the built application; set APP_URL for the actual addres
 - Website ownership through Google Search Console owner/full access, a website meta tag, or DNS TXT.
 - PostgreSQL storage, atomic quotas and billing reconciliation, indexed owner queries, and fenced worker leases.
 - Durable Vercel Workflow jobs with progress, cancellation, bounded batches, checkpoints, duplicate-run coordination, and cron dispatch recovery.
+- Daily, weekly, and monthly audit/Google refresh schedules with customer timezones, daylight-saving handling, pause controls, and activity history. Scheduled audits share the normal concurrency and monthly quotas.
 - Sitemap and internal-link discovery, robots policy checks, crawl delays, up to 10,000 pages per job, and explicit partial coverage.
 - Ten evidence-backed audit issue groups and a weighted foundational score. Marking a task done never changes the measured score.
+- Page-level comparisons between consecutive scans: verified fixes, new findings, persistent issues, and issues that could not be rechecked. Different rulesets do not produce misleading comparisons.
 - Google OAuth with PKCE, expiring one-use session-bound state, encrypted refresh tokens, read-only scopes, property selection, and disconnect/revocation.
-- Search Console clicks, impressions, queries, page data, and average positions. Analytics visitors, sessions, key events, and pageviews. Sync is manual in this version.
+- Search Console clicks, impressions, queries, page data, and average positions. Analytics visitors, sessions, key events, and pageviews. Refresh manually or on a saved schedule. Disconnecting or changing properties prevents an older refresh from restoring stale data.
 - DataForSEO competitor keyword-gap integration with cached results, user and platform daily request caps, source timestamps, and unavailable-value handling.
 - Stripe subscription Checkout, customer portal, signature-verified lifecycle webhooks, replay protection, and server-enforced entitlements. No free trial is configured.
 - Responsive account, project, connection, audit, action, content-template, comparison, and history screens. Exportable Markdown plans and reports.
@@ -49,10 +51,10 @@ The server has been exercised locally; it has not been deployed to audit.zoomi.c
 
 This release targets **Vercel with a dedicated PostgreSQL database**. It uses Node 22, Next.js and Vercel Workflow. Production accounts and reports never depend on local disk. Local development uses PGlite (PostgreSQL compiled to WebAssembly), not a production database. Run schema migrations against each new environment before serving requests.
 
-The connected Vercel team currently reports Hobby. A commercial launch needs Pro; the ten-minute recovery cron also requires support for that frequency. The existing account includes a Supabase integration, but no Audit database has been provisioned or connected. See [hosting and account findings](docs/HOSTING.md).
+The connected Vercel team currently reports Hobby. The owner will upgrade when launch needs it; development continues in this workspace without a plan change. A commercial launch needs Pro; the ten-minute recovery cron also requires support for that frequency. The existing account includes a Supabase integration, but no Audit database has been provisioned or connected. See [hosting and account findings](docs/HOSTING.md).
 Initial server-enforced allowances are 5 websites, 30 audits per calendar month, and 10,000 pages per audit. These are configuration defaults, not a settled commercial pricing offer. The crawl engine has functional coverage beyond the old 12-page sample and restart tests; a 10,000-page production load test has not been performed.
 
-Crawls read server-returned HTML without browser JavaScript. Query-string URLs, common downloads, more than 100 sitemaps, and overlarge pages are bounded. Skipped pages and remaining URLs are reported. A completed discovered queue does not prove every page on the internet was found. Scheduling, rendered crawling, exhaustive link/resource checks, full schema validation, Core Web Vitals, backlink analysis, and daily rank tracking are not implemented. The content studio currently builds structured templates, not AI-researched drafts.
+Crawls read server-returned HTML without browser JavaScript. Query-string URLs, common downloads, more than 100 sitemaps, and overlarge pages are bounded. Skipped pages and remaining URLs are reported. A completed discovered queue does not prove every page on the internet was found. Rendered crawling, exhaustive link/resource checks, full schema validation, Core Web Vitals, backlink analysis, and daily rank tracking are not implemented. The content studio currently builds structured templates, not AI-researched drafts.
 
 Google connections use the first page of account summaries (up to 200) and up to 1,000 page rows per sync; query rows are capped at 100. Provider limitations and anonymized queries also affect completeness. Search Console average position is not a location-specific rank measurement. A missing noindex directive does not prove Google indexing.
 
@@ -76,6 +78,8 @@ Keep the token-encryption secret recoverable in the platform secret store. Losin
 - `server/crawler.ts`, `jobs.ts`, `workflows/audit.ts`: bounded crawling, checkpoint leases, and durable execution
 - `server/network.ts`, `analyze.ts`: network protections and evidence rules
 - `server/google.ts`, `billing.ts`, `research.ts`: real provider integrations
+- `server/recurrence.ts`, `schedules.ts`, `workflows/google.ts`: customer schedules, admission checks, and durable refreshes
+- `server/comparison.ts`: comparison evidence and coverage-aware fix verification
 - `tests/`: executable regression and access-isolation tests
 - `docs/`: product evidence and deployment/cutover instructions
 

@@ -19,4 +19,9 @@ CREATE TABLE IF NOT EXISTS research(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,p
 CREATE UNIQUE INDEX IF NOT EXISTS one_active_owner_job ON jobs(owner_id) WHERE status IN ('queued','running');
 CREATE TABLE IF NOT EXISTS api_limits(key TEXT PRIMARY KEY,bucket BIGINT NOT NULL,count INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS provider_calls(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,created_at TEXT NOT NULL,status TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS schedules(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,kind TEXT NOT NULL,frequency TEXT NOT NULL,timezone TEXT NOT NULL,hour INTEGER NOT NULL,weekday INTEGER NOT NULL,page_limit INTEGER NOT NULL,next_run_at TEXT,last_run_at TEXT,last_status TEXT,last_error TEXT,updated_at TEXT NOT NULL,PRIMARY KEY(project_id,kind));
+CREATE INDEX IF NOT EXISTS schedules_due ON schedules(next_run_at) WHERE frequency<>'off';
+CREATE TABLE IF NOT EXISTS automation_runs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,kind TEXT NOT NULL,due_at TEXT NOT NULL,status TEXT NOT NULL,error TEXT,lease_token TEXT,lease_until BIGINT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(project_id,kind,due_at));
+CREATE INDEX IF NOT EXISTS automation_pending ON automation_runs(status,updated_at);
+ALTER TABLE connections ADD COLUMN IF NOT EXISTS revision TEXT NOT NULL DEFAULT '';
 `;

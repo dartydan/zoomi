@@ -251,6 +251,7 @@ export async function crawlBatch(
     done: true,
     audit: {
       id: randomUUID(),
+      rulesetVersion: 1,
       url: state.url,
       createdAt: new Date().toISOString(),
       score: healthScore(state.pages, findings),

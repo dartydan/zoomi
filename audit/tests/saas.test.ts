@@ -315,6 +315,188 @@ test("large report chunks stay private and reassemble without corrupting Unicode
   } while (next !== null);
   assert.deepEqual(JSON.parse(encoded), value);
 });
+
+test("schedules and automatic activity stay private; invalid preferences cannot be saved", async () => {
+  const prefs = {
+    frequency: "weekly",
+    timezone: "America/Indiana/Indianapolis",
+    hour: 9,
+    weekday: 1,
+    pageLimit: 10000,
+  };
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/schedules/audit`,
+        "PUT",
+        prefs,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (await request(`/api/projects/${project}/schedules`, "GET", undefined, bob))
+      .status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/automation-runs`,
+        "GET",
+        undefined,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/schedules/audit`,
+        "PUT",
+        { ...prefs, timezone: "Invalid/Timezone" },
+        alice,
+      )
+    ).status,
+    422,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/schedules/audit`,
+        "PUT",
+        { ...prefs, pageLimit: 10001 },
+        alice,
+      )
+    ).status,
+    422,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/schedules/audit`,
+        "PUT",
+        prefs,
+        alice,
+      )
+    ).status,
+    200,
+  );
+  const saved = await request(
+    `/api/projects/${project}/schedules`,
+    "GET",
+    undefined,
+    alice,
+  );
+  assert.equal(saved.body[0].timezone, prefs.timezone);
+  assert.equal(saved.body[0].pageLimit, 10000);
+  // Losing a subscription still permits preference changes, but not data refreshes.
+  await database
+    .prepare("UPDATE billing SET status='inactive' WHERE owner_id=?")
+    .run(owner);
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/schedules/audit`,
+        "PUT",
+        { ...prefs, frequency: "off" },
+        alice,
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/connections/sync`,
+        "POST",
+        {},
+        alice,
+      )
+    ).status,
+    402,
+  );
+});
+test("comparison evidence is paginated and cannot use reports from another website or account", async () => {
+  const urls = Array.from(
+    { length: 201 },
+    (_, i) => `https://example.com/page-${i}`,
+  );
+  const before = {
+    id: "compare-before",
+    url: "https://example.com",
+    createdAt: "2090-01-01T00:00:00Z",
+    score: 50,
+    pages: urls.map((url) => ({ url, status: 200 })),
+    findings: [{ id: "title", title: "Missing title", severity: "high", urls }],
+    completed: [],
+    limit: 10000,
+    skipped: [],
+  };
+  const current = {
+    ...before,
+    id: "compare-after",
+    createdAt: "2090-01-02T00:00:00Z",
+    findings: [],
+  };
+  for (const value of [before, current])
+    await database
+      .prepare("INSERT INTO audits VALUES(?,?,?,?,?)")
+      .run(value.id, project, owner, value.createdAt, JSON.stringify(value));
+  const path = `/api/projects/${project}/audits/compare-after/changes`;
+  assert.equal((await request(path, "GET", undefined, bob)).status, 404);
+  const result = await request(path, "GET", undefined, alice);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.counts.resolved, 201);
+  assert.equal(result.body.changes.length, 100);
+  assert.equal(result.body.next, 100);
+  const last = await request(path + "?offset=200", "GET", undefined, alice);
+  assert.equal(last.body.changes.length, 1);
+  assert.equal(last.body.next, null);
+  assert.equal(
+    (await request(path + "?offset=-1", "GET", undefined, alice)).status,
+    400,
+  );
+  assert.equal(
+    (await request(path + "?status=unknown", "GET", undefined, alice)).status,
+    400,
+  );
+  const other = await request(
+    "/api/projects",
+    "POST",
+    { name: "B website", url: "https://example.org" },
+    bob,
+  );
+  const bobId = (await request("/api/account", "GET", undefined, bob)).body.user
+    .id;
+  await database
+    .prepare("INSERT INTO audits VALUES(?,?,?,?,?)")
+    .run(
+      "bob-report",
+      other.body.id,
+      bobId,
+      before.createdAt,
+      JSON.stringify({ ...before, id: "bob-report" }),
+    );
+  assert.equal(
+    (await request(path + "?previous=bob-report", "GET", undefined, alice))
+      .status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/audits/bob-report/changes`,
+        "GET",
+        undefined,
+        alice,
+      )
+    ).status,
+    404,
+  );
+});
 test("sign-out invalidates the customer session and password sign-in works", async () => {
   assert.equal(
     (await request("/api/auth/sign-out", "POST", {}, alice)).status,

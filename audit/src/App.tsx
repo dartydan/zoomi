@@ -6,6 +6,7 @@ import {
   BarChart3,
   Check,
   CheckCheck,
+  CalendarClock,
   ChevronDown,
   ChevronRight,
   CircleHelp,
@@ -32,6 +33,8 @@ import type { Audit, AuditSummary, Finding, Section } from "./types";
 import { api, loadAudit, type Account, type Project, type Job } from "./api";
 import Connections, { type Metrics } from "./Connections";
 import Competitors from "./Competitors";
+import Automation from "./Automation";
+import AuditChanges from "./AuditChanges";
 
 const sections: { name: Section; icon: typeof Search }[] = [
   { name: "Overview", icon: LayoutDashboard },
@@ -40,6 +43,7 @@ const sections: { name: Section; icon: typeof Search }[] = [
   { name: "Content studio", icon: FileText },
   { name: "Competitors", icon: Target },
   { name: "Progress", icon: TrendingUp },
+  { name: "Automation", icon: CalendarClock },
 ];
 const host = (url: string) => {
   try {
@@ -568,7 +572,9 @@ export default function App({
                           ? "A little perspective helps."
                           : section === "Progress"
                             ? "See how far you’ve come."
-                            : "Bring the bigger picture together."}
+                            : section === "Automation"
+                              ? "Keep your website moving."
+                              : "Bring the bigger picture together."}
               </h1>
               <p>
                 {section === "Overview"
@@ -583,7 +589,9 @@ export default function App({
                           ? "Find customer searches that competitors cover and your website could answer."
                           : section === "Progress"
                             ? "Every fresh audit is another checkpoint for your website."
-                            : "More context means better decisions for your business."}
+                            : section === "Automation"
+                              ? "Schedule audits and keep your connected data up to date."
+                              : "More context means better decisions for your business."}
               </p>
             </div>
             <button className="button primary" onClick={openScan}>
@@ -674,9 +682,12 @@ export default function App({
           {!hasAudit &&
             !auditLoading &&
             !loading &&
-            !["Connections", "Content studio", "Competitors"].includes(
-              section,
-            ) && (
+            ![
+              "Connections",
+              "Content studio",
+              "Competitors",
+              "Automation",
+            ].includes(section) && (
               <section className="card">
                 <Empty
                   icon={Globe2}
@@ -1195,75 +1206,83 @@ export default function App({
           )}
           {section === "Competitors" && <Competitors project={project} />}
           {section === "Progress" && hasAudit && (
-            <section className="card">
-              <div className="section-head">
-                <div>
-                  <h2>Your website’s story so far</h2>
-                  <p>Compare independent scans of {host(audit.url)}.</p>
+            <>
+              <AuditChanges base={base} id={audit.id} />
+              <section className="card">
+                <div className="section-head">
+                  <div>
+                    <h2>Your website’s story so far</h2>
+                    <p>Compare independent scans of {host(audit.url)}.</p>
+                  </div>
+                  <button className="button secondary" onClick={openScan}>
+                    <RefreshCw size={16} />
+                    Check again
+                  </button>
                 </div>
-                <button className="button secondary" onClick={openScan}>
-                  <RefreshCw size={16} />
-                  Check again
-                </button>
-              </div>
-              {history.length ? (
-                <>
-                  <div className="history-chart">
-                    {history.slice(-10).map((a) => (
-                      <button
-                        key={a.id}
-                        onClick={() => setSelected(a.id)}
-                        aria-label={`View audit from ${date(a.createdAt)}, score ${a.score}`}
-                      >
-                        <b>{a.score}</b>
-                        <div
-                          style={{ height: `${Math.max(a.score * 1.6, 3)}px` }}
-                          className={a.id === audit.id ? "current" : ""}
-                        />
-                        <span>{date(a.createdAt)}</span>
+                {history.length ? (
+                  <>
+                    <div className="history-chart">
+                      {history.slice(-10).map((a) => (
+                        <button
+                          key={a.id}
+                          onClick={() => setSelected(a.id)}
+                          aria-label={`View audit from ${date(a.createdAt)}, score ${a.score}`}
+                        >
+                          <b>{a.score}</b>
+                          <div
+                            style={{
+                              height: `${Math.max(a.score * 1.6, 3)}px`,
+                            }}
+                            className={a.id === audit.id ? "current" : ""}
+                          />
+                          <span>{date(a.createdAt)}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="history-list">
+                      {[...history].reverse().map((a) => (
+                        <button key={a.id} onClick={() => setSelected(a.id)}>
+                          <span>
+                            <ShieldCheck size={18} />
+                            {new Date(a.createdAt).toLocaleString()}
+                          </span>
+                          <span>
+                            {a.pageCount} pages · {a.findingCount} findings
+                          </span>
+                          <strong>
+                            {a.score}/100 <ChevronRight size={17} />
+                          </strong>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="scope-note">
+                      <CircleHelp size={15} />
+                      <p>
+                        Changes in pages checked can affect the score. Marking a
+                        task done doesn’t change the score; a new scan measures
+                        the result.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <Empty
+                    icon={TrendingUp}
+                    title="Your first audit is the starting line"
+                    body="Run a live audit to establish your baseline. Future scans will show how your website changes over time."
+                    action={
+                      <button className="button primary" onClick={openScan}>
+                        Audit my website <ArrowRight size={16} />
                       </button>
-                    ))}
-                  </div>
-                  <div className="history-list">
-                    {[...history].reverse().map((a) => (
-                      <button key={a.id} onClick={() => setSelected(a.id)}>
-                        <span>
-                          <ShieldCheck size={18} />
-                          {new Date(a.createdAt).toLocaleString()}
-                        </span>
-                        <span>
-                          {a.pageCount} pages · {a.findingCount} findings
-                        </span>
-                        <strong>
-                          {a.score}/100 <ChevronRight size={17} />
-                        </strong>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="scope-note">
-                    <CircleHelp size={15} />
-                    <p>
-                      Changes in pages checked can affect the score. Marking a
-                      task done doesn’t change the score; a new scan measures
-                      the result.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <Empty
-                  icon={TrendingUp}
-                  title="Your first audit is the starting line"
-                  body="Run a live audit to establish your baseline. Future scans will show how your website changes over time."
-                  action={
-                    <button className="button primary" onClick={openScan}>
-                      Audit my website <ArrowRight size={16} />
-                    </button>
-                  }
-                />
-              )}
-            </section>
+                    }
+                  />
+                )}
+              </section>
+            </>
           )}
           {section === "Connections" && <Connections project={project} />}
+          {section === "Automation" && (
+            <Automation project={project} account={account} />
+          )}
           <footer className="page-footer">
             <span>
               <span className="footer-mark">a.</span>A little clarity. A better

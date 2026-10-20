@@ -15,3 +15,19 @@ export async function dispatchJob(id: string) {
       .run("Your audit is queued while the background service reconnects.", id);
   }
 }
+
+export async function dispatchRefresh(id: string) {
+  const { refreshGoogle } = await import("../workflows/google");
+  try {
+    await start(refreshGoogle, [id]);
+  } catch {
+    await db
+      .prepare(
+        "UPDATE automation_runs SET error=? WHERE id=? AND status='queued'",
+      )
+      .run(
+        "Your data refresh is queued while the background service reconnects.",
+        id,
+      );
+  }
+}

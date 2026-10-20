@@ -6,9 +6,12 @@ import { tmpdir } from "node:os";
 const temp = mkdtempSync(join(tmpdir(), "audit-providers-"));
 process.env.AUDIT_DATA_DIR = temp;
 const { seal, unseal, hash } = await import("../server/crypto.ts");
-const { matchesSearchProperty, completeAuthorization } = await import(
-  "../server/google.ts"
-);
+const {
+  matchesSearchProperty,
+  completeAuthorization,
+  syncMetrics,
+  disconnect,
+} = await import("../server/google.ts");
 const { parseGap } = await import("../server/research.ts");
 const { db } = await import("../server/database.ts");
 after(async () => {
@@ -101,5 +104,109 @@ test("keyword gap parsing keeps unavailable values null and rejects provider tas
   assert.throws(
     () => parseGap({ status_code: 20000, tasks: [{ status_code: 40501 }] }),
     /could not complete/,
+  );
+});
+
+async function connectedFixture() {
+  const p = await db.prepare("SELECT * FROM projects WHERE id='p'").get();
+  await db
+    .prepare(
+      "INSERT INTO connections(project_id,owner_id,tokens,gsc_site,updated_at,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET tokens=excluded.tokens,gsc_site=excluded.gsc_site,revision=excluded.revision",
+    )
+    .run(
+      "p",
+      "owner",
+      seal({ refresh_token: "test-fixture" }),
+      "sc-domain:example.com",
+      new Date().toISOString(),
+      "original",
+    );
+  return p;
+}
+test("disconnecting during a Google refresh cannot restore removed data", async () => {
+  const p = await connectedFixture();
+  let release!: () => void;
+  let begin!: () => void;
+  const started = new Promise<void>((r) => (begin = r));
+  const gate = new Promise<void>((r) => (release = r));
+  const requester = {
+    request: async () => {
+      begin();
+      await gate;
+      return { data: { rows: [] } };
+    },
+  } as unknown as Pick<import("google-auth-library").OAuth2Client, "request">;
+  const refreshing = syncMetrics("owner", p, requester);
+  const rejected = assert.rejects(refreshing, /connection changed/);
+  await started;
+  await disconnect("owner", "p", async () => {});
+  release();
+  await rejected;
+  assert.equal(
+    await db.prepare("SELECT * FROM connections WHERE project_id='p'").get(),
+    undefined,
+  );
+  assert.equal(
+    await db.prepare("SELECT * FROM metrics WHERE project_id='p'").get(),
+    undefined,
+  );
+});
+test("changing properties during a refresh rejects data from the old property", async () => {
+  const p = await connectedFixture();
+  let release!: () => void;
+  let begin!: () => void;
+  const started = new Promise<void>((r) => (begin = r));
+  const gate = new Promise<void>((r) => (release = r));
+  const requester = {
+    request: async () => {
+      begin();
+      await gate;
+      return { data: { rows: [] } };
+    },
+  } as unknown as Pick<import("google-auth-library").OAuth2Client, "request">;
+  const refreshing = syncMetrics("owner", p, requester);
+  const rejected = assert.rejects(refreshing, /connection changed/);
+  await started;
+  await db.transaction(async () => {
+    await db
+      .prepare(
+        "UPDATE connections SET revision='new-property' WHERE project_id='p'",
+      )
+      .run();
+  }, "connection:p")();
+  release();
+  await rejected;
+  assert.equal(
+    await db.prepare("SELECT * FROM metrics WHERE project_id='p'").get(),
+    undefined,
+  );
+});
+test("a slower earlier refresh cannot overwrite a more recent saved refresh", async () => {
+  const p = await connectedFixture();
+  await db
+    .prepare("INSERT INTO metrics VALUES(?,?,?,?)")
+    .run(
+      "p",
+      "owner",
+      JSON.stringify({ marker: "latest" }),
+      "2100-01-01T00:00:00.000Z",
+    );
+  const requester = {
+    request: async () => ({ data: { rows: [] } }),
+  } as unknown as Pick<import("google-auth-library").OAuth2Client, "request">;
+  assert.equal((await syncMetrics("owner", p, requester)).marker, "latest");
+  assert.equal(
+    JSON.parse(
+      (await db.prepare("SELECT data FROM metrics WHERE project_id='p'").get())
+        .data,
+    ).marker,
+    "latest",
+  );
+  await disconnect("owner", "p", async () => {
+    throw new Error("Provider unavailable");
+  });
+  assert.equal(
+    await db.prepare("SELECT * FROM metrics WHERE project_id='p'").get(),
+    undefined,
   );
 });

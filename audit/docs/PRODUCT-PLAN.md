@@ -14,7 +14,7 @@ This is an original implementation informed by publicly documented competitor wo
 
 | Source | Publicly documented capability | What Audit should adapt | Current implementation |
 | --- | --- | --- | --- |
-| [SE Ranking Website Audit guide](https://help.seranking.com/hc/en-us/articles/16332618262044-How-to-use-Website-Audit) | Site crawling, technical issues, explanations, reports, and recurring audits | A trustworthy health baseline, page evidence, and repeatable checks | Sitemap/link crawl with a 10,000-page allowance, ten issue groups, explanations, Markdown export, manual reruns |
+| [SE Ranking Website Audit guide](https://help.seranking.com/hc/en-us/articles/16332618262044-How-to-use-Website-Audit) | Site crawling, technical issues, explanations, reports, and recurring audits | A trustworthy health baseline, page evidence, and repeatable checks | Sitemap/link crawl with a 10,000-page allowance, ten issue groups, explanations, Markdown export, manual reruns and recurring schedules |
 | [SE Ranking audit overview](https://help.seranking.com/hc/en-us/articles/18560929519772-Overview-Tab-Interactive-Guide) | Health summary, issue priority, and page-level inspection | Start with the important work; let the owner inspect details as needed | Overview, action plan, and searchable page table |
 | [Semrush Keyword Gap](https://www.semrush.com/kb/28-keyword-gap) | Compare competitor keyword coverage, find missing and weak terms, and filter opportunities | “What are customers finding elsewhere that we could answer better?” | DataForSEO keyword-gap adapter, requiring licensed provider activation |
 | [Semrush SEO Checker](https://www.semrush.com/siteaudit/) | Website scores, prioritized fixes, and technical/on-page assessment | Simple entry point followed by a practical plan | Verified customer websites, evidence-backed findings; no speed/backlink claims |
@@ -35,7 +35,7 @@ Use “may help” for recommendations. Never guarantee rankings, revenue, or vi
 
 ## Implemented product
 
-The application now includes customer signup/sign-in, private website projects, ownership verification, persistent background audits, checkpoints and cancellation, a guided action plan, saved history, content templates, Google OAuth and data sync, subscription checkout/portal/webhook handling, and a licensed keyword-gap adapter.
+The application now includes customer signup/sign-in, private website projects, ownership verification, persistent background audits, checkpoints and cancellation, a guided action plan, saved history, coverage-aware fix comparisons, content templates, Google OAuth, manual and scheduled data sync, recurring audits, subscription checkout/portal/webhook handling, and a licensed keyword-gap adapter.
 
 The initial limits are 5 websites, 30 audits per month, and 10,000 pages per audit. These are server defaults, not an approved commercial offer. The product is developed locally; integrations are not activated until Zoomi supplies its own provider accounts and settings. No sample workspace or free trial is used as a substitute for paid customer access.
 
@@ -43,9 +43,9 @@ The initial limits are 5 websites, 30 audits per month, and 10,000 pages per aud
 
 The next gate is provider activation and live validation: Google consent/client configuration, transactional email, Stripe pricing and sandbox lifecycle checks, the licensed SEO-data budget, a persistent production origin, and the domain cutover. See [the concrete launch runbook](LAUNCH.md).
 
-The deployment target is the existing Vercel account, with remote PostgreSQL and Vercel Workflow. Worker leases fence duplicate deliveries; crawl checkpoints resume across function invocations. Local PostgreSQL-compatible PGlite storage is for development only.
+Development continues in the existing workspace; the owner will upgrade the Vercel plan when needed for launch. The deployment target is the existing Vercel account, with remote PostgreSQL and Vercel Workflow. Worker leases fence duplicate deliveries; crawl checkpoints resume across function invocations. Local PostgreSQL-compatible PGlite storage is for development only.
 
-Additional product development: automatic scheduled audits and data sync, rendered crawling, verified fix matching across runs, provider-aware CMS instructions, PDF reports, customer-safe sharing, daily rank tracking, keyword clustering, backlink intelligence, Core Web Vitals, business-outcome prioritization, and AI-assisted briefs grounded in measured data. The current content studio uses structured templates and does not claim to perform AI research.
+Additional product development: rendered crawling, provider-aware CMS instructions, PDF reports, customer-safe sharing, daily rank tracking, keyword clustering, backlink intelligence, Core Web Vitals, business-outcome prioritization, and AI-assisted briefs grounded in measured data. The current content studio uses structured templates and does not claim to perform AI research.
 
 No price is committed. Measure crawl, search-data, storage, email, payment, and support costs, then choose pricing and allowances. Provider subscriptions require an explicit spending decision.
 

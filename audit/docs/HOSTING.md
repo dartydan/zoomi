@@ -9,7 +9,7 @@ Audit needs more than frontend hosting: private customer accounts, saved reports
 | Next.js on Vercel | Customer screens, login, API requests, Google callbacks, Stripe webhooks |
 | Dedicated PostgreSQL database | Accounts, sessions, projects, audit evidence, credentials, billing state |
 | Vercel Workflow | Resumable crawl batches, retries and duplicate-run coordination |
-| Vercel Cron | Recover jobs whose initial workflow dispatch was interrupted |
+| Vercel Cron | Admit due customer schedules and recover interrupted workflow dispatches |
 | Cloudflare DNS | Route audit.zoomi.co to the validated Vercel deployment |
 
 ## Account findings, October 20, 2026
@@ -20,6 +20,8 @@ Existing Vercel integrations include Supabase and Upstash. Integration presence 
 
 The empty [zoomi-audit Vercel project](https://vercel.com/dartydans-projects/zoomi-audit) has been created with Next.js, root directory `audit`, and Node 22.x. It has no deployment or domain assignment yet. No plan upgrade, database purchase, production deployment, or DNS change has been performed by this work.
 
+The owner has chosen to continue in this workspace and upgrade to Pro when required for launch. Keep development local until provider configuration and launch validation are ready.
+
 ## Current domain
 
 The Cloudflare CNAME `audit.zoomi.co` points to `online.seranking.com`, TTL 300, proxy off. SE Ranking currently supplies the service behind that address. Once the replacement passes staging checks, use Vercel's exact returned DNS target for the cutover. Keep the old destination as the rollback value. The root marketing site remains separate.
@@ -28,6 +30,6 @@ The Cloudflare CNAME `audit.zoomi.co` points to `online.seranking.com`, TTL 300,
 
 Production never stores accounts in Vercel's temporary filesystem. `DATABASE_URL` is mandatory. Development uses local PGlite so the PostgreSQL queries and account flows can be tested without purchasing a service. Production schema migrations are explicit (`npm run db:migrate`), not run on every request.
 
-Each workflow step crawls a bounded batch, saves its checkpoint to PostgreSQL, and continues through Workflow. Database leases prevent duplicate deliveries from overwriting newer work; deterministic workflow hooks prevent concurrent duplicate runs. A signed cron request recovers interrupted dispatches. Reports are delivered in small authenticated chunks to stay within response limits.
+Each workflow step crawls a bounded batch, saves its checkpoint to PostgreSQL, and continues through Workflow. Database leases prevent duplicate deliveries from overwriting newer work; deterministic workflow hooks prevent concurrent duplicate runs. An authenticated cron request admits due schedules and recovers interrupted dispatches. Each website can schedule daily, weekly, or monthly audits and Google refreshes in its own timezone. PostgreSQL transactions serialize scheduled and manual audit admission; a background batch rechecks the subscription before crawling. Reports are delivered in small authenticated chunks to stay within response limits.
 
 The app has built successfully locally and a real public zoomi.co crawl has completed through Workflow. Production PostgreSQL connectivity, Vercel-hosted workflow execution, provider credentials, backups, and the 10,000-page load test still need live validation. See [the launch runbook](LAUNCH.md).
