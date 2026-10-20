@@ -782,8 +782,7 @@ img {
 }
 
 .section-head--right {
-    grid-template-columns: auto 1fr;
-    align-items: start;
+    grid-template-columns: 1fr;
 }
 
 .section-head--right h2 {
@@ -791,10 +790,8 @@ img {
     white-space: nowrap;
 }
 
-.section-head.section-head--right > .section-index {
-    max-width: none;
-    margin: 0;
-    align-self: start;
+.section-head--wide {
+    grid-template-columns: 3fr 1.4fr;
 }
 
 .section-head > p:last-child {
@@ -1328,6 +1325,7 @@ img {
 }
 
 .studio h2 {
+    grid-column: 2;
     margin: -0.12em 0 0;
     font-size: clamp(3rem, 7.4vw, 8.5rem);
     font-weight: 600;
@@ -1858,10 +1856,6 @@ img {
 
     .section-head > p:last-child {
         margin-left: 17%;
-    }
-
-    .section-head.section-head--right > .section-index {
-        margin-left: 0;
     }
 
     .section-head--right h2 {
