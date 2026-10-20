@@ -47,3 +47,13 @@ Then open `http://127.0.0.1:4173`.
 
 The site is served as static files through GitHub Pages. `CNAME` points to
 `zoomi.co`; `robots.txt` and `sitemap.xml` are served from the repository root.
+
+## SEO and GEO
+
+- Canonical host is `https://zoomi.co/` (www.zoomi.co currently returns a 522).
+- `index.html` carries the title, description, canonical, Open Graph/Twitter
+  tags with `og-image.png`, and a JSON-LD graph (Organization +
+  ProfessionalService, Zoomi Audit SoftwareApplication, WebSite, FAQPage).
+- The visible FAQ mirrors the FAQPage schema; keep them in sync.
+- `robots.txt` explicitly allows AI search crawlers; `llms.txt` gives answer
+  engines a plain-text summary; `sitemap.xml` lists only canonical URLs.

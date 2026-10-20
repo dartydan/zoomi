@@ -900,6 +900,78 @@ img {
     outline-color: var(--ink);
 }
 
+/* FAQ */
+
+.faq {
+    position: relative;
+    z-index: 2;
+    padding-bottom: clamp(4rem, 8vw, 8rem);
+    background: var(--paper);
+}
+
+.faq-list {
+    border-top: 1px solid var(--ink);
+}
+
+.faq-item {
+    border-bottom: 1px solid var(--ink);
+}
+
+.faq-item summary {
+    display: grid;
+    padding: 1.4rem 0;
+    cursor: pointer;
+    grid-template-columns: 0.55fr 5.45fr auto;
+    align-items: center;
+    gap: 1.25rem;
+    list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary::after {
+    color: var(--coral);
+    font-size: 1.6rem;
+    font-weight: 300;
+    content: '+';
+    transition: transform 300ms ease;
+}
+
+.faq-item[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.faq-item summary span {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+}
+
+.faq-item h3 {
+    margin: 0;
+    font-size: clamp(1.3rem, 2.3vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1;
+}
+
+.faq-item p {
+    max-width: 44rem;
+    margin: -0.4rem 0 1.6rem calc(9.2% + 1.25rem);
+    color: var(--muted);
+    font-size: 0.98rem;
+    font-weight: 500;
+    line-height: 1.55;
+}
+
+.faq-item a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--coral);
+    text-underline-offset: 0.2em;
+}
+
 /* Venture roster */
 
 .ventures--compact .section-head h2 {
@@ -1592,6 +1664,14 @@ img {
 /* Mobile */
 
 @media (max-width: 720px) {
+    .faq-item summary {
+        grid-template-columns: 2rem 1fr auto;
+        gap: 0.75rem;
+    }
+
+    .faq-item p {
+        margin-left: 2.75rem;
+    }
     .hero-actions {
         padding-left: 17%;
     }
