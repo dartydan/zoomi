@@ -52,4 +52,4 @@ The site is served as static files through GitHub Pages. `CNAME` points to
 
 Section photos in `photos/site/` are from [Unsplash](https://unsplash.com)
 under the Unsplash License (free for commercial use, no attribution required).
-They render in grayscale with a color tint and switch to full color on hover.
+They are cropped into arch, circle, leaf and tilted shapes.
