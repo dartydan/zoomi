@@ -14,19 +14,28 @@ export interface CrawlState {
   attempts: number;
   discovered: number;
   sitemapsLoaded: boolean;
+  sitemapQueue?: string[];
+  sitemapsDone?: string[];
 }
 export interface CrawlOptions {
   resume?: CrawlState;
-  checkpoint?: (state: CrawlState) => void;
+  checkpoint?: (state: CrawlState) => void | Promise<void>;
   signal?: AbortSignal;
-  cancelled?: () => boolean;
+  cancelled?: () => boolean | Promise<boolean>;
+  batchRequests?: number;
+  batchMilliseconds?: number;
 }
-export async function crawl(
+export async function crawlBatch(
   input: string,
   fetcher: typeof safeFetch = safeFetch,
   maxPages = 10000,
   options: CrawlOptions = {},
-): Promise<Audit> {
+): Promise<{ state: CrawlState; done: boolean; audit?: Audit }> {
+  const startedAt = Date.now();
+  let requests = 0;
+  const yieldBatch = () =>
+    requests >= (options.batchRequests ?? Infinity) ||
+    Date.now() - startedAt >= (options.batchMilliseconds ?? Infinity);
   const start = normalizeUrl(input);
   const signal = options.signal ?? AbortSignal.timeout(6 * 60 * 60 * 1000);
   const policies = new Map<string, ReturnType<typeof robotsParser>>();
@@ -120,14 +129,20 @@ export async function crawl(
     }
   };
   if (!state.sitemapsLoaded) {
-    const sitemapQueue = [
+    const sitemapQueue = (state.sitemapQueue ??= [
       ...policy.getSitemaps(),
       `${state.origin}/sitemap.xml`,
-    ];
-    const done = new Set<string>();
+    ]);
+    const done = new Set(state.sitemapsDone ?? []);
     while (sitemapQueue.length && done.size < 100) {
-      if (options.cancelled?.()) throw new Error("Audit cancelled.");
+      if (await options.cancelled?.()) throw new Error("Audit cancelled.");
+      if (yieldBatch()) {
+        state.sitemapsDone = [...done];
+        await options.checkpoint?.(state);
+        return { state, done: false };
+      }
       const url = sitemapQueue.shift()!;
+      requests++;
       if (done.has(url)) continue;
       done.add(url);
       try {
@@ -146,21 +161,34 @@ export async function crawl(
           });
         } else $("url loc").each((_, el) => add($(el).text().trim()));
       } catch (error) {
-        if (signal.aborted) throw error;
+        if (signal.aborted) {
+          sitemapQueue.unshift(url);
+          done.delete(url);
+          state.sitemapsDone = [...done];
+          await options.checkpoint?.(state);
+          throw error;
+        }
       }
       if (sitemapQueue.length) await new Promise((r) => setTimeout(r, delay));
     }
     state.sitemapsLoaded = true;
-    options.checkpoint?.(state);
+    state.sitemapsDone = [...done];
+    await options.checkpoint?.(state);
   }
   while (
     state.queue.length &&
     state.pages.length < maxPages &&
     state.attempts < cap
   ) {
-    if (options.cancelled?.()) throw new Error("Audit cancelled.");
+    if (await options.cancelled?.()) throw new Error("Audit cancelled.");
     signal.throwIfAborted();
+    if (yieldBatch()) {
+      state.seen = [...seen];
+      await options.checkpoint?.(state);
+      return { state, done: false };
+    }
     const url = state.queue.shift()!;
+    requests++;
     queued.delete(url);
     if (seen.has(url)) continue;
     seen.add(url);
@@ -200,7 +228,7 @@ export async function crawl(
         seen.delete(url);
         state.attempts--;
         state.seen = [...seen];
-        options.checkpoint?.(state);
+        await options.checkpoint?.(state);
         throw error;
       }
       if (state.skipped.length < 2000)
@@ -211,27 +239,46 @@ export async function crawl(
         });
     }
     state.seen = [...seen];
-    options.checkpoint?.(state);
+    await options.checkpoint?.(state);
     if (state.queue.length && state.pages.length < maxPages)
       await new Promise((r) => setTimeout(r, delay));
   }
   state.seen = [...seen];
-  options.checkpoint?.(state);
+  await options.checkpoint?.(state);
   const findings = buildFindings(state.pages);
   return {
-    id: randomUUID(),
-    url: state.url,
-    createdAt: new Date().toISOString(),
-    score: healthScore(state.pages, findings),
-    pages: state.pages,
-    findings,
-    skipped: state.skipped,
-    completed: [],
-    limit: maxPages,
-    coverage: {
-      discovered: state.discovered,
-      remaining: state.queue.length,
-      partial: state.queue.length > 0 || state.skipped.length > 0,
+    state,
+    done: true,
+    audit: {
+      id: randomUUID(),
+      url: state.url,
+      createdAt: new Date().toISOString(),
+      score: healthScore(state.pages, findings),
+      pages: state.pages,
+      findings,
+      skipped: state.skipped,
+      completed: [],
+      limit: maxPages,
+      coverage: {
+        discovered: state.discovered,
+        remaining: state.queue.length,
+        partial: state.queue.length > 0 || state.skipped.length > 0,
+      },
     },
   };
+}
+
+export async function crawl(
+  input: string,
+  fetcher: typeof safeFetch = safeFetch,
+  maxPages = 10000,
+  options: CrawlOptions = {},
+): Promise<Audit> {
+  let result = await crawlBatch(input, fetcher, maxPages, options);
+  while (!result.done)
+    result = await crawlBatch(input, fetcher, maxPages, {
+      ...options,
+      resume: result.state,
+    });
+  return result.audit!;
 }

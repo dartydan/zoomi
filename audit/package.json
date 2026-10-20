@@ -4,36 +4,62 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server/dev.mjs",
-    "build": "tsc --noEmit && vite build",
-    "start": "tsx server/index.ts",
-    "test": "tsx --test tests/*.test.ts"
+    "dev": "\"$npm_node_execpath\" node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port 5173",
+    "build": "\"$npm_node_execpath\" node_modules/next/dist/bin/next build --webpack",
+    "start": "\"$npm_node_execpath\" node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 5173",
+    "test": "\"$npm_node_execpath\" node_modules/tsx/dist/cli.mjs --test tests/*.test.ts",
+    "typecheck": "\"$npm_node_execpath\" node_modules/typescript/bin/tsc --noEmit",
+    "db:migrate": "\"$npm_node_execpath\" node_modules/tsx/dist/cli.mjs server/migrate.ts"
   },
   "engines": {
-    "node": ">=22.13"
+    "node": ">=22.13 <23"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "@vercel/functions": "^3.10.1",
     "better-auth": "^1.7.12",
-    "better-sqlite3": "^13.0.3",
     "cheerio": "^1.1.2",
     "express": "^5.1.0",
     "google-auth-library": "^11.3.1",
     "ipaddr.js": "^2.2.0",
+    "kysely": "^0.28.18",
+    "kysely-pglite": "^0.5.0",
     "lucide-react": "^0.468.0",
+    "next": "^16.4.2",
+    "pg": "^8.23.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "robots-parser": "^3.0.1",
-    "stripe": "^23.0.0"
+    "stripe": "^23.0.0",
+    "workflow": "^5.2.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.0.0",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0",
-    "vite": "^7.3.1"
+    "typescript": "^5.9.0"
+  },
+  "overrides": {
+    "@xhmikosr/archive-type": {
+      "file-type": "^21.3.2"
+    },
+    "@xhmikosr/decompress-tar": {
+      "file-type": "^21.3.2"
+    },
+    "@xhmikosr/decompress-tarbz2": {
+      "file-type": "^21.3.2"
+    },
+    "@xhmikosr/decompress-targz": {
+      "file-type": "^21.3.2"
+    },
+    "@xhmikosr/decompress-unzip": {
+      "file-type": "^21.3.2"
+    },
+    "@xhmikosr/downloader": {
+      "file-type": "^21.3.2"
+    }
   }
 }

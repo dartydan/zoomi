@@ -43,7 +43,7 @@ The initial limits are 5 websites, 30 audits per month, and 10,000 pages per aud
 
 The next gate is provider activation and live validation: Google consent/client configuration, transactional email, Stripe pricing and sandbox lifecycle checks, the licensed SEO-data budget, a persistent production origin, and the domain cutover. See [the concrete launch runbook](LAUNCH.md).
 
-Before scaling beyond a single service instance, move job coordination and storage to a distributed queue and managed relational database with leases. The current release deliberately supports one durable Node process with SQLite WAL storage.
+The deployment target is the existing Vercel account, with remote PostgreSQL and Vercel Workflow. Worker leases fence duplicate deliveries; crawl checkpoints resume across function invocations. Local PostgreSQL-compatible PGlite storage is for development only.
 
 Additional product development: automatic scheduled audits and data sync, rendered crawling, verified fix matching across runs, provider-aware CMS instructions, PDF reports, customer-safe sharing, daily rank tracking, keyword clustering, backlink intelligence, Core Web Vitals, business-outcome prioritization, and AI-assisted briefs grounded in measured data. The current content studio uses structured templates and does not claim to perform AI research.
 
@@ -64,9 +64,9 @@ Search Console average position must not be presented as a location/device-speci
 
 ## Production shape
 
-React interface, authenticated Node API, SQLite WAL storage on a persistent volume, and a restartable background worker. Google credentials are encrypted; every customer query is scoped to its owner. Billing entitlements are enforced on the server from signed Stripe events. The API serves from the same audit.zoomi.co origin as the application.
+React/Next.js interface, authenticated Node API, remote PostgreSQL, and durable Vercel Workflow batches. Google credentials are encrypted; every customer query is scoped to its owner. Billing entitlements are enforced on the server from signed Stripe events. The API serves from the same audit.zoomi.co origin as the application.
 
-A public deployment needs a Node-capable origin and verified backups. It cannot run as static GitHub Pages. Cloudflare's current CNAME points to the SE Ranking white-label platform; switch that record only after service activation and migration review. The root zoomi.co marketing site remains separate. Cloudflare operations use `cf` unless a Wrangler configuration is added later.
+A public deployment needs Vercel Pro, a dedicated PostgreSQL database, activated providers, and verified backups. It cannot run as static GitHub Pages. Cloudflare's current CNAME points to the SE Ranking white-label platform; switch that record only after service activation and migration review. The root zoomi.co marketing site remains separate. Cloudflare operations use `cf` unless a Wrangler configuration is added later.
 
 ## First pilot learning goals
 

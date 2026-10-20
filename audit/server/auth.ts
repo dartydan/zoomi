@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { getMigrations } from "better-auth/db/migration";
-import { db } from "./database.ts";
+import { sqlDb } from "./database.ts";
 import { appUrl, authSecret, production } from "./config.ts";
 async function sendEmail(to: string, subject: string, url: string) {
   if (!process.env.RESEND_API_KEY)
@@ -25,7 +25,7 @@ export const auth = betterAuth({
   appName: "Audit by Zoomi",
   baseURL: appUrl,
   secret: authSecret,
-  database: db,
+  database: { db: sqlDb, type: "postgres" },
   trustedOrigins: [appUrl],
   emailAndPassword: {
     enabled: true,

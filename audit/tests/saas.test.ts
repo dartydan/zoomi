@@ -2,19 +2,19 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
-import Database from "better-sqlite3";
+import { join } from "node:path";
+import type { Server } from "node:http";
+
 const directory = mkdtempSync(join(tmpdir(), "audit-saas-test-"));
 const port = 14431;
 const base = `http://127.0.0.1:${port}`;
-let server: ChildProcess;
-let database: InstanceType<typeof Database>;
+let server: Server;
+let database: typeof import("../server/database").db;
 let alice = "";
 let bob = "";
 let owner = "";
 let project = "";
-let output = "";
+
 async function request(
   path: string,
   method = "GET",
@@ -42,49 +42,29 @@ async function request(
   };
 }
 before(async () => {
-  server = spawn(
-    process.execPath,
-    ["node_modules/tsx/dist/cli.mjs", "server/index.ts"],
-    {
-      cwd: process.cwd(),
-      env: {
-        ...process.env,
-        NODE_ENV: "test",
-        AUDIT_DATA_DIR: directory,
-        PORT: String(port),
-        APP_URL: base,
-        RESEND_API_KEY: "",
-        GOOGLE_CLIENT_ID: "",
-        GOOGLE_CLIENT_SECRET: "",
-        STRIPE_SECRET_KEY: "",
-        STRIPE_WEBHOOK_SECRET: "",
-        STRIPE_PRICE_ID: "",
-      },
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
-  server.stdout?.on("data", (c) => (output += c));
-  server.stderr?.on("data", (c) => (output += c));
-  for (let i = 0; i < 100; i++) {
-    try {
-      if ((await fetch(base + "/api/health")).ok) break;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 100));
-    if (i === 99) throw new Error(output);
-  }
-  database = new Database(resolve(directory, "audit.sqlite"));
+  Object.assign(process.env, {
+    NODE_ENV: "test",
+    AUDIT_DATA_DIR: directory,
+    DATABASE_URL: "",
+    APP_URL: base,
+    RESEND_API_KEY: "",
+    GOOGLE_CLIENT_ID: "",
+    GOOGLE_CLIENT_SECRET: "",
+    STRIPE_SECRET_KEY: "",
+    STRIPE_WEBHOOK_SECRET: "",
+    STRIPE_PRICE_ID: "",
+  });
+  const { app } = await import("../server/app");
+  database = (await import("../server/database")).db;
+  server = app.listen(port, "127.0.0.1");
+  await new Promise<void>((r) => server.once("listening", r));
 });
 after(async () => {
-  database?.close();
-  server?.kill("SIGTERM");
-  await new Promise<void>((resolve) => {
-    if (server.exitCode !== null) return resolve();
-    server.once("exit", () => resolve());
-    setTimeout(() => {
-      server.kill("SIGKILL");
-      resolve();
-    }, 3000).unref();
-  });
+  if (server)
+    await new Promise<void>((r, reject) =>
+      server.close((e) => (e ? reject(e) : r())),
+    );
+  await database?.close();
   rmSync(directory, { recursive: true, force: true });
 });
 test("sign-up creates persistent private sessions; unknown requests are unauthenticated", async () => {
@@ -163,7 +143,7 @@ test("billing and ownership gate full crawls independently", async () => {
     ).status,
     402,
   );
-  database
+  await database
     .prepare("INSERT INTO billing(owner_id,status,updated_at) VALUES(?,?,?)")
     .run(owner, "active", new Date().toISOString());
   assert.equal(
@@ -190,7 +170,7 @@ test("private audit evidence and task changes cannot be accessed by another acco
     limit: 10000,
     skipped: [],
   };
-  database
+  await database
     .prepare("INSERT INTO audits VALUES(?,?,?,?,?)")
     .run(audit.id, project, owner, audit.createdAt, JSON.stringify(audit));
   const own = await request(
@@ -291,6 +271,49 @@ test("cross-origin writes and unavailable providers fail without success claims"
     ).body.connected,
     false,
   );
+});
+test("large report chunks stay private and reassemble without corrupting Unicode", async () => {
+  const value = {
+    id: "large",
+    url: "https://example.com",
+    createdAt: new Date().toISOString(),
+    score: 70,
+    pages: [],
+    findings: [],
+    skipped: [],
+    completed: [],
+    limit: 10000,
+    evidence: "🌿".repeat(600000),
+  };
+  await database
+    .prepare("INSERT INTO audits VALUES(?,?,?,?,?)")
+    .run(value.id, project, owner, value.createdAt, JSON.stringify(value));
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${project}/audits/large?chunk=0`,
+        "GET",
+        undefined,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  let next: number | null = 0;
+  let encoded = "";
+  do {
+    const r = await request(
+      `/api/projects/${project}/audits/large?chunk=${next}`,
+      "GET",
+      undefined,
+      alice,
+    );
+    assert.equal(r.status, 200);
+    assert.ok(Buffer.byteLength(JSON.stringify(r.body)) < 1500000);
+    encoded += r.body.chunk;
+    next = r.body.next;
+  } while (next !== null);
+  assert.deepEqual(JSON.parse(encoded), value);
 });
 test("sign-out invalidates the customer session and password sign-in works", async () => {
   assert.equal(

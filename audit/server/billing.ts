@@ -25,20 +25,20 @@ interface Billing {
   status: string;
   updated_at: string;
 }
-export function subscription(owner: string) {
-  return db.prepare("SELECT * FROM billing WHERE owner_id=?").get(owner) as
-    | Billing
-    | undefined;
+export async function subscription(owner: string) {
+  return (await db
+    .prepare("SELECT * FROM billing WHERE owner_id=?")
+    .get(owner)) as Billing | undefined;
 }
-export const entitled = (owner: string) =>
-  subscription(owner)?.status === "active";
+export const entitled = async (owner: string) =>
+  (await subscription(owner))?.status === "active";
 export async function checkout(owner: string, email: string) {
   if (!billingReady())
     throw new Error(
       "Subscription billing has not been activated by Zoomi yet.",
     );
   const api = stripe();
-  let row = subscription(owner);
+  let row = await subscription(owner);
   if (row?.status === "active")
     throw new Error(
       "Your subscription is already active. Use Manage subscription to make changes.",
@@ -48,10 +48,12 @@ export async function checkout(owner: string, email: string) {
       { email },
       { idempotencyKey: `audit-customer-${owner}` },
     );
-    db.prepare(
-      "INSERT INTO billing(owner_id,customer_id,status,updated_at) VALUES(?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET customer_id=excluded.customer_id",
-    ).run(owner, customer.id, "inactive", new Date().toISOString());
-    row = subscription(owner);
+    await db
+      .prepare(
+        "INSERT INTO billing(owner_id,customer_id,status,updated_at) VALUES(?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET customer_id=excluded.customer_id",
+      )
+      .run(owner, customer.id, "inactive", new Date().toISOString());
+    row = await subscription(owner);
   }
   const customer = row!.customer_id!;
   const existing = await api.subscriptions.list({
@@ -103,7 +105,7 @@ export async function checkout(owner: string, email: string) {
   return session.url;
 }
 export async function billingPortal(owner: string) {
-  const row = subscription(owner);
+  const row = await subscription(owner);
   if (!row?.customer_id) throw new Error("No billing account exists yet.");
   return (
     await stripe().billingPortal.sessions.create({
@@ -123,7 +125,6 @@ export async function planInfo() {
     interval: price.recurring?.interval,
   };
 }
-const customerLocks = new Map<string, Promise<void>>();
 export async function webhook(
   body: Buffer,
   signature: string,
@@ -136,7 +137,7 @@ export async function webhook(
     signature,
     process.env.STRIPE_WEBHOOK_SECRET,
   );
-  if (db.prepare("SELECT id FROM stripe_events WHERE id=?").get(event.id))
+  if (await db.prepare("SELECT id FROM stripe_events WHERE id=?").get(event.id))
     return;
   const supported =
     event.type.startsWith("customer.subscription.") ||
@@ -156,50 +157,53 @@ export async function webhook(
         ? object.customer
         : object.customer?.id;
     if (customer) {
-      const prior = customerLocks.get(customer) ?? Promise.resolve();
-      const current = prior
-        .catch(() => {})
-        .then(async () => {
-          const row = db
-            .prepare("SELECT * FROM billing WHERE customer_id=?")
-            .get(customer) as Billing | undefined;
-          if (!row) return;
-          // Read current Stripe state, so delayed or replayed lifecycle events cannot restore a cancelled entitlement.
-          const subs = await api.subscriptions.list({
-            customer,
-            status: "all",
-            limit: 100,
-            expand: ["data.latest_invoice"],
-          });
-          const active = subs.data.find(
-            (s) =>
-              s.status === "active" &&
-              s.items.data.some(
-                (i) => i.price.id === process.env.STRIPE_PRICE_ID,
-              ) &&
-              typeof s.latest_invoice === "object" &&
-              s.latest_invoice?.status === "paid",
-          );
-          db.prepare(
+      await db.transaction(async () => {
+        if (
+          await db
+            .prepare("SELECT id FROM stripe_events WHERE id=?")
+            .get(event.id)
+        )
+          return;
+        const row = (await db
+          .prepare("SELECT * FROM billing WHERE customer_id=?")
+          .get(customer)) as Billing | undefined;
+        if (!row) return;
+        // Read current Stripe state, so delayed or replayed lifecycle events cannot restore a cancelled entitlement.
+        const subs = await api.subscriptions.list({
+          customer,
+          status: "all",
+          limit: 100,
+          expand: ["data.latest_invoice"],
+        });
+        const active = subs.data.find(
+          (s) =>
+            s.status === "active" &&
+            s.items.data.some(
+              (i) => i.price.id === process.env.STRIPE_PRICE_ID,
+            ) &&
+            typeof s.latest_invoice === "object" &&
+            s.latest_invoice?.status === "paid",
+        );
+        await db
+          .prepare(
             "UPDATE billing SET subscription_id=?,status=?,updated_at=? WHERE customer_id=?",
-          ).run(
+          )
+          .run(
             active?.id ?? null,
             active ? "active" : "inactive",
             new Date().toISOString(),
             customer,
           );
-        });
-      customerLocks.set(customer, current);
-      try {
-        await current;
-      } finally {
-        if (customerLocks.get(customer) === current)
-          customerLocks.delete(customer);
-      }
+        await db
+          .prepare(
+            "INSERT INTO stripe_events VALUES(?,?) ON CONFLICT DO NOTHING",
+          )
+          .run(event.id, new Date().toISOString());
+      }, `billing:${customer}`)();
+      return;
     }
   }
-  db.prepare("INSERT OR IGNORE INTO stripe_events VALUES(?,?)").run(
-    event.id,
-    new Date().toISOString(),
-  );
+  await db
+    .prepare("INSERT INTO stripe_events VALUES(?,?) ON CONFLICT DO NOTHING")
+    .run(event.id, new Date().toISOString());
 }

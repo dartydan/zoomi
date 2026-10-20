@@ -5,7 +5,7 @@ if (existsSync(".env")) process.loadEnvFile(".env");
 export const production = process.env.NODE_ENV === "production";
 export const appUrl = process.env.APP_URL ?? "http://127.0.0.1:5173";
 export const dataDir = resolve(process.env.AUDIT_DATA_DIR ?? "data");
-mkdirSync(dataDir, { recursive: true, mode: 0o700 });
+if (!production) mkdirSync(dataDir, { recursive: true, mode: 0o700 });
 function secret(name: string) {
   if (process.env[name]) return process.env[name]!;
   if (production)
@@ -25,6 +25,8 @@ if (production) {
   if (!appUrl.startsWith("https://"))
     throw new Error("APP_URL must use HTTPS in production.");
   for (const name of [
+    "DATABASE_URL",
+    "CRON_SECRET",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "STRIPE_SECRET_KEY",

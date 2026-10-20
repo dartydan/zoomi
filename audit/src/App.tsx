@@ -29,7 +29,7 @@ import {
   X,
 } from "lucide-react";
 import type { Audit, AuditSummary, Finding, Section } from "./types";
-import { api, type Account, type Project, type Job } from "./api";
+import { api, loadAudit, type Account, type Project, type Job } from "./api";
 import Connections, { type Metrics } from "./Connections";
 import Competitors from "./Competitors";
 
@@ -252,8 +252,9 @@ export default function App({
       setSelectedAudit(undefined);
       return;
     }
+    const controller = new AbortController();
     setAuditLoading(true);
-    void api<Audit>(`${base}/audits/${selected}`)
+    void loadAudit(`${base}/audits/${selected}`, controller.signal)
       .then((a) => {
         if (alive) setSelectedAudit(a);
       })
@@ -265,6 +266,7 @@ export default function App({
       });
     return () => {
       alive = false;
+      controller.abort();
     };
   }, [base, selected]);
   const audit =
@@ -331,14 +333,16 @@ export default function App({
   async function toggleTask(f: Finding) {
     setSaving(true);
     try {
-      const updated = await api<Audit>(
+      const updated = await api<{ completed: string[] }>(
         `${base}/audits/${audit.id}/tasks/${f.id}`,
         {
           method: "PATCH",
           body: JSON.stringify({ completed: !audit.completed.includes(f.id) }),
         },
       );
-      setSelectedAudit(updated);
+      setSelectedAudit((current) =>
+        current ? { ...current, completed: updated.completed } : current,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save action.");
     } finally {

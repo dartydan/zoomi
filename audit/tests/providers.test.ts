@@ -11,8 +11,8 @@ const { matchesSearchProperty, completeAuthorization } = await import(
 );
 const { parseGap } = await import("../server/research.ts");
 const { db } = await import("../server/database.ts");
-after(() => {
-  db.close();
+after(async () => {
+  await db.close();
   rmSync(temp, { recursive: true, force: true });
 });
 test("refresh tokens are encrypted and tampering is rejected", () => {
@@ -54,23 +54,19 @@ test("Google properties match exact hosts or a real domain boundary", () => {
 });
 test("OAuth callbacks reject unknown, expired, and different-session states before calling Google", async () => {
   const now = new Date().toISOString();
-  db.prepare("INSERT INTO projects VALUES(?,?,?,?,?,?,?)").run(
-    "p",
-    "owner",
-    "Website",
-    "https://example.com/",
-    "token",
-    null,
-    now,
-  );
-  db.prepare("INSERT INTO oauth_states VALUES(?,?,?,?,?,?)").run(
-    hash("state"),
-    "owner",
-    "session-a",
-    "p",
-    seal("verifier"),
-    Date.now() + 60000,
-  );
+  await db
+    .prepare("INSERT INTO projects VALUES(?,?,?,?,?,?,?)")
+    .run("p", "owner", "Website", "https://example.com/", "token", null, now);
+  await db
+    .prepare("INSERT INTO oauth_states VALUES(?,?,?,?,?,?)")
+    .run(
+      hash("state"),
+      "owner",
+      "session-a",
+      "p",
+      seal("verifier"),
+      Date.now() + 60000,
+    );
   await assert.rejects(
     () => completeAuthorization("owner", "session-b", "state", "code"),
     /expired/,
@@ -79,7 +75,7 @@ test("OAuth callbacks reject unknown, expired, and different-session states befo
     () => completeAuthorization("another-owner", "session-a", "state", "code"),
     /expired/,
   );
-  db.prepare("UPDATE oauth_states SET expires_at=0").run();
+  await db.prepare("UPDATE oauth_states SET expires_at=0").run();
   await assert.rejects(
     () => completeAuthorization("owner", "session-a", "state", "code"),
     /expired/,

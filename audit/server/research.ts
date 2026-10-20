@@ -7,9 +7,7 @@ export const researchReady = () =>
     process.env.DATAFORSEO_PASSWORD &&
     Number(process.env.DATAFORSEO_DAILY_REQUEST_LIMIT) > 0
   );
-db.exec(
-  "CREATE TABLE IF NOT EXISTS provider_calls(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,created_at TEXT NOT NULL,status TEXT NOT NULL)",
-);
+
 export const locations: Record<string, number> = {
   "United States": 2840,
   "United Kingdom": 2826,
@@ -63,11 +61,11 @@ export async function keywordGap(
   const own = new URL(project.url).hostname.replace(/^www\./, "");
   if (target === own) throw new Error("Choose a different website to compare.");
   if (!locations[country]) throw new Error("Choose a supported search region.");
-  const cache = db
+  const cache = (await db
     .prepare(
       "SELECT data FROM research WHERE owner_id=? AND project_id=? AND type='keyword-gap' AND created_at>? ORDER BY created_at DESC",
     )
-    .all(owner, project.id, new Date(Date.now() - 86400000).toISOString()) as {
+    .all(owner, project.id, new Date(Date.now() - 86400000).toISOString())) as {
     data: string;
   }[];
   const cached = cache
@@ -76,18 +74,18 @@ export async function keywordGap(
   if (cached) return cached;
   const id = randomUUID();
   const today = new Date().toISOString().slice(0, 10);
-  db.transaction(() => {
+  await db.transaction(async () => {
     const total = (
-      db
+      (await db
         .prepare("SELECT COUNT(*) n FROM provider_calls WHERE created_at>=?")
-        .get(today) as { n: number }
+        .get(today)) as { n: number }
     ).n;
     const user = (
-      db
+      (await db
         .prepare(
           "SELECT COUNT(*) n FROM provider_calls WHERE owner_id=? AND created_at>=?",
         )
-        .get(owner, today) as { n: number }
+        .get(owner, today)) as { n: number }
     ).n;
     if (
       total >= Number(process.env.DATAFORSEO_DAILY_REQUEST_LIMIT) ||
@@ -96,12 +94,9 @@ export async function keywordGap(
       throw new Error(
         "The daily research allowance has been reached. Try again tomorrow.",
       );
-    db.prepare("INSERT INTO provider_calls VALUES(?,?,?,?)").run(
-      id,
-      owner,
-      new Date().toISOString(),
-      "pending",
-    );
+    await db
+      .prepare("INSERT INTO provider_calls VALUES(?,?,?,?)")
+      .run(id, owner, new Date().toISOString(), "pending");
   })();
   try {
     const response = await fetch(
@@ -138,20 +133,24 @@ export async function keywordGap(
       source: "DataForSEO",
       retrievedAt: new Date().toISOString(),
     };
-    db.prepare("INSERT INTO research VALUES(?,?,?,?,?,?)").run(
-      id,
-      owner,
-      project.id,
-      "keyword-gap",
-      JSON.stringify(result),
-      new Date().toISOString(),
-    );
-    db.prepare("UPDATE provider_calls SET status='complete' WHERE id=?").run(
-      id,
-    );
+    await db
+      .prepare("INSERT INTO research VALUES(?,?,?,?,?,?)")
+      .run(
+        id,
+        owner,
+        project.id,
+        "keyword-gap",
+        JSON.stringify(result),
+        new Date().toISOString(),
+      );
+    await db
+      .prepare("UPDATE provider_calls SET status='complete' WHERE id=?")
+      .run(id);
     return result;
   } catch (error) {
-    db.prepare("UPDATE provider_calls SET status='failed' WHERE id=?").run(id);
+    await db
+      .prepare("UPDATE provider_calls SET status='failed' WHERE id=?")
+      .run(id);
     throw error;
   }
 }

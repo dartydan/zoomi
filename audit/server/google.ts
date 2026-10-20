@@ -23,10 +23,10 @@ interface Connection {
   ga_property: string | null;
   updated_at: string;
 }
-export function connection(owner: string, project: string) {
-  return db
+export async function connection(owner: string, project: string) {
+  return (await db
     .prepare("SELECT * FROM connections WHERE owner_id=? AND project_id=?")
-    .get(owner, project) as Connection | undefined;
+    .get(owner, project)) as Connection | undefined;
 }
 export async function authorizationUrl(
   owner: string,
@@ -41,15 +41,19 @@ export async function authorizationUrl(
   const { codeVerifier, codeChallenge } =
     await oauth.generateCodeVerifierAsync();
   const state = randomBytes(32).toString("base64url");
-  db.prepare("DELETE FROM oauth_states WHERE expires_at<?").run(Date.now());
-  db.prepare("INSERT INTO oauth_states VALUES(?,?,?,?,?,?)").run(
-    hash(state),
-    owner,
-    session,
-    project,
-    seal(codeVerifier),
-    Date.now() + 10 * 60 * 1000,
-  );
+  await db
+    .prepare("DELETE FROM oauth_states WHERE expires_at<?")
+    .run(Date.now());
+  await db
+    .prepare("INSERT INTO oauth_states VALUES(?,?,?,?,?,?)")
+    .run(
+      hash(state),
+      owner,
+      session,
+      project,
+      seal(codeVerifier),
+      Date.now() + 10 * 60 * 1000,
+    );
   return oauth.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
@@ -69,18 +73,17 @@ export async function completeAuthorization(
   state: string,
   code: string,
 ) {
-  const row = db
+  const row = (await db
     .prepare(
-      "SELECT * FROM oauth_states WHERE state_hash=? AND owner_id=? AND session_id=? AND expires_at>?",
+      "DELETE FROM oauth_states WHERE state_hash=? AND owner_id=? AND session_id=? AND expires_at>? RETURNING *",
     )
-    .get(hash(state), owner, session, Date.now()) as
+    .get(hash(state), owner, session, Date.now())) as
     | { project_id: string; verifier: string }
     | undefined;
   if (!row)
     throw new Error(
       "This connection request expired. Start again from your website’s Connections page.",
     );
-  db.prepare("DELETE FROM oauth_states WHERE state_hash=?").run(hash(state));
   const oauth = client();
   const { tokens } = await oauth.getToken({
     code,
@@ -90,35 +93,51 @@ export async function completeAuthorization(
     throw new Error(
       "Google did not grant ongoing access. Reconnect and allow access to the selected services.",
     );
-  db.prepare(
-    "INSERT INTO connections(project_id,owner_id,tokens,updated_at) VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET tokens=excluded.tokens,gsc_site=NULL,ga_property=NULL,updated_at=excluded.updated_at",
-  ).run(row.project_id, owner, seal(tokens), new Date().toISOString());
-  db.prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?").run(
-    row.project_id,
-    owner,
-  );
+  await db
+    .prepare(
+      "INSERT INTO connections(project_id,owner_id,tokens,updated_at) VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET tokens=excluded.tokens,gsc_site=NULL,ga_property=NULL,updated_at=excluded.updated_at",
+    )
+    .run(row.project_id, owner, seal(tokens), new Date().toISOString());
+  await db
+    .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+    .run(row.project_id, owner);
   return row.project_id;
 }
-export function googleClient(owner: string, project: string) {
-  const row = connection(owner, project);
+export async function googleClient(owner: string, project: string) {
+  const row = await connection(owner, project);
   if (!row) throw new Error("Connect your Google account first.");
   const oauth = client();
   const credentials = unseal<Credentials>(row.tokens);
   oauth.setCredentials(credentials);
-  oauth.on("tokens", (tokens) => {
-    db.prepare(
-      "UPDATE connections SET tokens=?,updated_at=? WHERE project_id=? AND owner_id=?",
-    ).run(
-      seal({
-        ...credentials,
-        ...tokens,
-        refresh_token: tokens.refresh_token ?? credentials.refresh_token,
-      }),
-      new Date().toISOString(),
-      project,
-      owner,
-    );
-  });
+  // Persist refreshed credentials before returning any provider response; serverless
+  // instances may stop as soon as their HTTP response finishes.
+  const request = oauth.request.bind(oauth);
+  oauth.request = (async (...args: any[]) => {
+    try {
+      return await (request as Function)(...args);
+    } finally {
+      if (
+        oauth.credentials.access_token !== credentials.access_token ||
+        oauth.credentials.refresh_token !== credentials.refresh_token
+      ) {
+        await db
+          .prepare(
+            "UPDATE connections SET tokens=?,updated_at=? WHERE project_id=? AND owner_id=? AND tokens=?",
+          )
+          .run(
+            seal({
+              ...oauth.credentials,
+              refresh_token:
+                oauth.credentials.refresh_token ?? credentials.refresh_token,
+            }),
+            new Date().toISOString(),
+            project,
+            owner,
+            row.tokens,
+          );
+      }
+    }
+  }) as typeof oauth.request;
   return oauth;
 }
 const domain = (url: string) => new URL(url).hostname.toLowerCase();
@@ -138,7 +157,7 @@ export function matchesSearchProperty(site: string, url: string) {
   }
 }
 export async function properties(owner: string, p: ProjectRow) {
-  const oauth = googleClient(owner, p.id);
+  const oauth = await googleClient(owner, p.id);
   const results = await Promise.allSettled([
     oauth.request<{
       siteEntry?: { siteUrl: string; permissionLevel: string }[];
@@ -193,7 +212,7 @@ export async function bindProperties(
   ga?: string,
 ) {
   const available = await properties(owner, p);
-  const oauth = googleClient(owner, p.id);
+  const oauth = await googleClient(owner, p.id);
   if (gsc && !available.searchConsole.some((s) => s.siteUrl === gsc))
     throw new Error(
       "Choose an accessible Search Console property for this website.",
@@ -224,9 +243,11 @@ export async function bindProperties(
       );
   }
   if (!gsc && !ga) throw new Error("Select at least one property.");
-  db.prepare(
-    "UPDATE connections SET gsc_site=?,ga_property=?,updated_at=? WHERE project_id=? AND owner_id=?",
-  ).run(gsc ?? null, ga ?? null, new Date().toISOString(), p.id, owner);
+  await db
+    .prepare(
+      "UPDATE connections SET gsc_site=?,ga_property=?,updated_at=? WHERE project_id=? AND owner_id=?",
+    )
+    .run(gsc ?? null, ga ?? null, new Date().toISOString(), p.id, owner);
   if (
     gsc &&
     available.searchConsole.some(
@@ -235,15 +256,15 @@ export async function bindProperties(
         ["siteOwner", "siteFullUser"].includes(s.permissionLevel),
     )
   )
-    db.prepare(
-      "UPDATE projects SET verified_at=? WHERE id=? AND owner_id=?",
-    ).run(new Date().toISOString(), p.id, owner);
+    await db
+      .prepare("UPDATE projects SET verified_at=? WHERE id=? AND owner_id=?")
+      .run(new Date().toISOString(), p.id, owner);
 }
 export async function syncMetrics(owner: string, p: ProjectRow) {
-  const c = connection(owner, p.id);
+  const c = await connection(owner, p.id);
   if (!c?.gsc_site && !c?.ga_property)
     throw new Error("Choose the properties to connect first.");
-  const oauth = googleClient(owner, p.id);
+  const oauth = await googleClient(owner, p.id);
   const daysAgo = (n: number) =>
     new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
   const result: Record<string, unknown> = {
@@ -329,28 +350,29 @@ export async function syncMetrics(owner: string, p: ProjectRow) {
   result.errors = errors;
   if (!result.searchConsole && !result.analytics)
     throw new Error(errors.join(" "));
-  db.prepare(
-    "INSERT INTO metrics VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET data=excluded.data,synced_at=excluded.synced_at",
-  ).run(p.id, owner, JSON.stringify(result), new Date().toISOString());
+  await db
+    .prepare(
+      "INSERT INTO metrics VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET data=excluded.data,synced_at=excluded.synced_at",
+    )
+    .run(p.id, owner, JSON.stringify(result), new Date().toISOString());
   return result;
 }
 export async function disconnect(owner: string, project: string) {
-  const c = connection(owner, project);
+  const c = await connection(owner, project);
   if (c) {
-    const oauth = googleClient(owner, project);
+    const oauth = await googleClient(owner, project);
     try {
       await oauth.revokeCredentials();
     } catch {
       /* Local removal always completes, even if the grant is already revoked. */
     }
-    db.transaction(() => {
-      db.prepare(
-        "DELETE FROM connections WHERE project_id=? AND owner_id=?",
-      ).run(project, owner);
-      db.prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?").run(
-        project,
-        owner,
-      );
+    await db.transaction(async () => {
+      await db
+        .prepare("DELETE FROM connections WHERE project_id=? AND owner_id=?")
+        .run(project, owner);
+      await db
+        .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+        .run(project, owner);
     })();
   }
 }

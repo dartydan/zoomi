@@ -8,3 +8,9 @@ audit/node_modules/
 audit/dist/
 audit/data/
 node_modules/.cache/
+
+audit/.next/
+audit/.vercel/
+audit/.workflow-data/
+audit/app/.well-known/
+audit/tsconfig.tsbuildinfo
