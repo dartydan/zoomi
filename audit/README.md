@@ -78,3 +78,7 @@ Keep the token-encryption secret recoverable in the platform secret store. Losin
 - `server/google.ts`, `billing.ts`, `research.ts`: real provider integrations
 - `tests/`: executable regression and access-isolation tests
 - `docs/`: product evidence and deployment/cutover instructions
+
+## GitHub checks
+
+The ready-to-install workflow is in `docs/setup/audit-checks.example.yml`. The authenticated GitHub token lacks the `workflow` scope, so this branch preserves it as a template instead of changing `.github/workflows`. Once authorized, copy it to `.github/workflows/audit-checks.yml`; its Node 22 job runs the test suite and production build. Local validation was completed independently.
