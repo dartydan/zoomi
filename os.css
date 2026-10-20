@@ -74,8 +74,14 @@ img {
 }
 
 :focus-visible {
-    outline: 2px solid var(--coral);
+    outline: 2px solid var(--ink);
     outline-offset: 4px;
+}
+
+.studio :focus-visible,
+.site-footer :focus-visible,
+.mobile-menu :focus-visible {
+    outline-color: var(--yellow);
 }
 
 .grain {
