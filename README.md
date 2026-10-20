@@ -45,3 +45,10 @@ Then open `http://127.0.0.1:4173`.
 
 The site is served as static files through GitHub Pages. `CNAME` points to
 `zoomi.co`; `robots.txt` and `sitemap.xml` are served from the repository root.
+
+## Audit SaaS
+
+The separate `audit/` application targets **audit.zoomi.co** with customer accounts,
+verified website projects, background crawls, Google data connections, and subscription
+access. See [audit/README.md](audit/README.md), [the product plan](audit/docs/PRODUCT-PLAN.md),
+and [the launch runbook](audit/docs/LAUNCH.md). The studio homepage stays separate.

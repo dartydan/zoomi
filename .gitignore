@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+output/
+.playwright-cli/
+audit/node_modules/
+audit/dist/
+audit/data/
+node_modules/.cache/
