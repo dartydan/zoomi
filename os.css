@@ -1344,6 +1344,7 @@ img {
 }
 
 .studio-copy {
+    grid-column: 3;
     align-self: end;
 }
 
