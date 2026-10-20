@@ -81,4 +81,19 @@ if (heroVideo && !reduceMotion) {
     heroVideo.play().catch(() => {});
 }
 
+const filmSound = document.querySelector('.film-sound');
+
+if (heroVideo && filmSound) {
+    filmSound.addEventListener('click', () => {
+        const on = heroVideo.muted;
+        heroVideo.muted = !on;
+        if (on) {
+            heroVideo.currentTime = 0;
+            heroVideo.play().catch(() => {});
+        }
+        filmSound.setAttribute('aria-pressed', String(on));
+        filmSound.textContent = on ? 'Sound: on' : 'Sound: off';
+    });
+}
+
 document.querySelector('#year').textContent = new Date().getFullYear();

@@ -391,6 +391,60 @@ img {
     object-fit: cover;
 }
 
+.hero-grid--film {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+}
+
+.hero-grid--film .hero-copy {
+    padding-bottom: clamp(1.5rem, 3vw, 2.75rem);
+}
+
+.hero-grid--film h1 {
+    width: 100%;
+    font-size: clamp(3.6rem, 7vw, 8.8rem);
+}
+
+.hero-art.hero-art--film {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin-left: 0;
+}
+
+.art-board--film {
+    height: auto;
+    background: #f0e9d9;
+    aspect-ratio: 16 / 9;
+}
+
+.art-caption.art-caption--film {
+    position: relative;
+    gap: 1rem;
+}
+
+.film-sound {
+    padding: 0.2rem 0;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    color: inherit;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.film-sound:focus-visible {
+    outline-color: var(--yellow);
+}
+
+.hero-art--film .hero-sticker {
+    top: -2.6rem;
+    right: -1.4rem;
+    left: auto;
+}
+
 .art-meta {
     position: absolute;
     z-index: 6;
@@ -1500,6 +1554,10 @@ img {
 /* Tablet */
 
 @media (max-width: 1050px) {
+    .hero-grid.hero-grid--film {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .service-grid {
         grid-template-columns: repeat(2, 1fr);
     }

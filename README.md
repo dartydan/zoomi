@@ -58,10 +58,16 @@ The site is served as static files through GitHub Pages. `CNAME` points to
 - `robots.txt` explicitly allows AI search crawlers; `llms.txt` gives answer
   engines a plain-text summary; `sitemap.xml` lists only canonical URLs.
 
-## Hero motion
+## Hero film
 
-The hero board plays `motion/hero-motion.webm` / `.mp4` (9s loop, muted,
-no audio) with `motion/hero-motion-poster.jpg` as the poster. It only starts
-from `os.js`, so visitors with reduced motion (or no JS) see the poster.
-`motion/source.html` is the frame-accurate source: render it with Playwright
-by calling `render(t)` per frame, then encode with ffmpeg.
+The hero plays "What Zoomi does", a 23s explainer in an editorial paper-collage
+style: `motion/hero-explainer.webm` / `.mp4` (960x540, muted loop) with
+`motion/hero-explainer-poster.jpg` as the poster. It only starts from `os.js`, so
+visitors with reduced motion (or no JS) see the poster. The "Sound" button in the
+caption unmutes it and restarts from the top.
+
+`motion/source.html` is the frame-accurate source and player (play, scrub, sound).
+It exposes `window.seek(t)`, `window.DURATION` and `window.scoreSound`: render
+frames with Playwright by calling `seek(i / 30)`, render the audio with
+`SOUND.renderOffline(scoreSound, DURATION, 48000)`, then encode with ffmpeg.
+The client in the film (Hartwell Precision) is a fictional example.
