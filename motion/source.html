@@ -816,7 +816,7 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
     C.k2 = makeStrip('NOTICED.', '400 150px "Anton"', { seed: 112, hl: 'NOTICED.' });
     C.url = makeStrip('zoomi.co', '700 52px "Libre Baskerville"', { bg: INK, fg: CREAM, seed: 113, padX: 24, padY: 14 });
     C.lab = {};
-    [['PLAIN SIGN', 11], ['DATED SITE', 12], ['BRAND', 13], ['WEBSITE', 14], ['CAMPAIGN', 15], ['ZOOMI AUDIT', 16]].forEach(([s, k]) => { C.lab[s] = label(s, k); });
+    [['PLAIN SIGN', 11], ['DATED SITE', 12], ['BRAND', 13], ['WEBSITE', 14], ['STRATEGY', 15], ['ZOOMI AUDIT', 16]].forEach(([s, k]) => { C.lab[s] = label(s, k); });
     // old website: the "before"
     C.oldSite = sprite(300, 210, 30, (c) => {
       const p = edgePoly(300, 210, [0, 0, 0, 0], 63, 3); shadowFill(c, p, '#e2e0da'); texture(c, p, 0.5, 40, 40);
@@ -953,14 +953,14 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
     });
     if (tq >= X.siteTag) { const A = arrive(tq, X.siteTag, 'drop'); place(c, cam, 1.06, sx - 150, sy + 225, 0.02 + A.r, A.s, (cc) => drawSpr(cc, C.lab.WEBSITE)); }
     place(c, cam, 1, 0, 0, 0, 1, (cc) => inkArrow(cc, ARR2, H.clamp((tq - X.arr2[0]) / (X.arr2[1] - X.arr2[0])), 3.4, INK, [11, 8]));
-    // CAMPAIGN station
+    // STRATEGY station
     putSpr(c, cam, 1, C.poster, ST.poster[0], ST.poster[1], -0.035, 1, tq, X.poster, 'drop', (cc) => { if (tq >= X.poster + 0.1) tape(cc, 0, -200, 100, 30, 0.04, 35); });
     putSpr(c, cam, 1.02, C.phone, ST.phone[0], ST.phone[1], 0.05, 1, tq, X.phone, 'slideR');
     for (let i = 0; i < 6; i++) { // hearts float up off the post on 12 fps steps
       const a = X.hearts + i * 0.16, u = (tq - a) / 0.75; if (u < 0 || u >= 1) continue;
       place(c, cam, 1.04, ST.phone[0] - 60 + (i % 3) * 34, ST.phone[1] + 50 - u * 230, 0, 1, (cc) => { cc.globalAlpha = u > 0.75 ? (1 - u) * 4 : 1; heart(cc, 0, 0, 30 + (i % 2) * 8, RED); });
     }
-    if (tq >= X.campTag) { const A = arrive(tq, X.campTag, 'drop'); place(c, cam, 1.06, ST.poster[0] + 90, ST.poster[1] + 255, -0.02 + A.r, A.s, (cc) => drawSpr(cc, C.lab.CAMPAIGN)); }
+    if (tq >= X.campTag) { const A = arrive(tq, X.campTag, 'drop'); place(c, cam, 1.06, ST.poster[0] + 90, ST.poster[1] + 255, -0.02 + A.r, A.s, (cc) => drawSpr(cc, C.lab.STRATEGY)); }
     // the pull-back reveals all three; the headline lands near the lens (almost screen-fixed)
     if (tq >= X.d1) { const A = arrive(tq, X.d1, 'drop'); place(c, cam, 0.15, 860 * 0.15 + 0, -300, -0.02 + A.r, A.s, (cc) => { drawSpr(cc, C.d1); hilite(cc, C.d1.hl, (t - X.hlD[0]) / (X.hlD[1] - X.hlD[0]), 7); }); }
   };

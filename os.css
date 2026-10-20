@@ -1633,6 +1633,8 @@ img {
         opacity: 0;
         color: var(--paper);
         background: var(--ink);
+        overflow-y: auto;
+        overscroll-behavior: contain;
         flex-direction: column;
         justify-content: space-between;
         transition: transform 500ms cubic-bezier(.16, 1, .3, 1), opacity 300ms ease, visibility 500ms;
@@ -1684,6 +1686,16 @@ img {
         font-size: 0.55rem;
         font-weight: 400;
         letter-spacing: 0;
+    }
+
+    @media (max-height: 520px) {
+        .mobile-menu {
+            padding-top: calc(var(--header-h) + 0.75rem);
+        }
+
+        .mobile-menu a {
+            font-size: clamp(1.6rem, 9vh, 2.6rem);
+        }
     }
 
     .mobile-menu > p {
