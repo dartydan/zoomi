@@ -1,7 +1,9 @@
 # Zoomi — zoomi.co
 
-The homepage for **Zoomi, LLC**, presented as an independent venture studio
-with four active businesses:
+The homepage for **Zoomi, LLC**. It leads with **Zoomi Marketing**, a
+design-led marketing studio (brand identity, websites, strategy),
+with Zoomi Audit positioned as the SEO software upsell. The other ventures sit
+lower on the page:
 
 | Venture | Domain | Focus |
 | --- | --- | --- |
@@ -52,3 +54,27 @@ The separate `audit/` application targets **audit.zoomi.co** with customer accou
 verified website projects, background crawls, Google data connections, and subscription
 access. See [audit/README.md](audit/README.md), [the product plan](audit/docs/PRODUCT-PLAN.md),
 and [the launch runbook](audit/docs/LAUNCH.md). The studio homepage stays separate.
+
+## SEO and GEO
+
+- Canonical host is `https://zoomi.co/` (www.zoomi.co currently returns a 522).
+- `index.html` carries the title, description, canonical, Open Graph/Twitter
+  tags with `og-image.png`, and a JSON-LD graph (Organization +
+  ProfessionalService, Zoomi Audit SoftwareApplication, WebSite, FAQPage).
+- The visible FAQ mirrors the FAQPage schema; keep them in sync.
+- `robots.txt` explicitly allows AI search crawlers; `llms.txt` gives answer
+  engines a plain-text summary; `sitemap.xml` lists only canonical URLs.
+
+## Hero film
+
+The hero plays "What Zoomi does", a 23s explainer in an editorial paper-collage
+style: `motion/hero-explainer.webm` / `.mp4` (960x540, muted loop) with
+`motion/hero-explainer-poster.jpg` as the poster. It only starts from `os.js`, so
+visitors with reduced motion (or no JS) see the poster. The "Sound" button in the
+caption unmutes it and restarts from the top.
+
+`motion/source.html` is the frame-accurate source and player (play, scrub, sound).
+It exposes `window.seek(t)`, `window.DURATION` and `window.scoreSound`: render
+frames with Playwright by calling `seek(i / 30)`, render the audio with
+`SOUND.renderOffline(scoreSound, DURATION, 48000)`, then encode with ffmpeg.
+The client in the film (Hartwell Precision) is a fictional example.
