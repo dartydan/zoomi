@@ -288,14 +288,13 @@ img {
 
 .hero h1 .line {
     display: block;
-    margin-bottom: -0.16em;
-    padding-bottom: 0.16em;
-    overflow: hidden;
 }
 
+/* lines are left unclipped so descenders and the serif can overlap the line below */
 .hero h1 .line > span {
     display: block;
-    transform: translateY(110%);
+    opacity: 0;
+    transform: translateY(0.35em);
     animation: titleIn 950ms cubic-bezier(.16, 1, .3, 1) forwards;
 }
 
@@ -316,7 +315,7 @@ img {
 }
 
 @keyframes titleIn {
-    to { transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .hero-intro {
@@ -780,6 +779,22 @@ img {
     color: var(--coral);
     font-family: var(--serif);
     font-weight: 300;
+}
+
+.section-head--right {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+}
+
+.section-head--right h2 {
+    justify-self: end;
+    white-space: nowrap;
+}
+
+.section-head.section-head--right > .section-index {
+    max-width: none;
+    margin: 0;
+    align-self: start;
 }
 
 .section-head > p:last-child {
@@ -1841,6 +1856,14 @@ img {
         margin-left: 17%;
     }
 
+    .section-head.section-head--right > .section-index {
+        margin-left: 0;
+    }
+
+    .section-head--right h2 {
+        font-size: clamp(2.8rem, 13.5vw, 6rem);
+    }
+
     .venture-row {
         min-height: 0;
         padding: 1rem 0 1.25rem;
@@ -1996,6 +2019,7 @@ img {
     }
 
     .hero h1 .line > span {
+        opacity: 1;
         transform: none;
     }
 }
