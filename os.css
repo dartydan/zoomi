@@ -752,6 +752,10 @@ img {
     transform: translate(0.15rem, -0.15rem);
 }
 
+.button-primary:focus-visible {
+    outline-color: var(--ink);
+}
+
 .button-primary--ink {
     color: var(--white);
     background: var(--ink);
