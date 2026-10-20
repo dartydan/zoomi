@@ -785,9 +785,106 @@ img {
     grid-template-columns: 1fr;
 }
 
+.section-head--right {
+    position: relative;
+}
+
 .section-head--right h2 {
+    position: relative;
     justify-self: end;
     white-space: nowrap;
+}
+
+/* playful cut-paper shapes filling the space left of "What we do." */
+.services-doodle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: min(52%, 44rem);
+    height: auto;
+    overflow: visible;
+    transform: translateY(-38%);
+    pointer-events: none;
+}
+
+.doodle-trail {
+    fill: none;
+    stroke: var(--ink);
+    stroke-dasharray: 2 10;
+    stroke-linecap: round;
+    stroke-width: 2.5;
+    opacity: 0.5;
+    animation: doodleTrail 2.4s linear infinite;
+}
+
+.doodle {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.doodle--sun {
+    fill: var(--yellow);
+    animation: doodleBob 5.5s ease-in-out infinite;
+}
+
+.doodle--site {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 2.5;
+    animation: doodleTilt 7s ease-in-out infinite;
+}
+
+.doodle--site circle {
+    fill: var(--ink);
+    stroke: none;
+}
+
+.doodle--site .doodle-cta {
+    fill: var(--coral);
+    stroke: none;
+}
+
+.doodle--spark {
+    fill: var(--coral);
+    animation: doodleSpin 9s linear infinite;
+}
+
+.doodle--bars rect {
+    fill: var(--blue);
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: doodleGrow 3.2s cubic-bezier(.16, 1, .3, 1) infinite alternate;
+}
+
+.doodle--bars rect:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.doodle--bars rect:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+@keyframes doodleTrail {
+    to { stroke-dashoffset: -24; }
+}
+
+@keyframes doodleBob {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(10px, -14px); }
+}
+
+@keyframes doodleTilt {
+    0%, 100% { transform: rotate(-4deg) translateY(0); }
+    50% { transform: rotate(3deg) translateY(-8px); }
+}
+
+@keyframes doodleSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes doodleGrow {
+    from { transform: scaleY(0.35); }
+    to { transform: scaleY(1); }
 }
 
 .section-head--wide {
@@ -1866,6 +1963,14 @@ img {
     .section-head--right h2,
     .section-head h2.one-line {
         font-size: clamp(2.8rem, 13.5vw, 6rem);
+    }
+
+    .ventures .section-head h2.one-line {
+        font-size: clamp(2.2rem, 10.4vw, 5rem);
+    }
+
+    .services-doodle {
+        display: none;
     }
 
     .venture-row {
