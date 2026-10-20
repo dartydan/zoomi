@@ -892,6 +892,10 @@ img {
     align-self: flex-start;
 }
 
+.audit-band :focus-visible {
+    outline-color: var(--ink);
+}
+
 /* Photography */
 
 .photo {
