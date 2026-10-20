@@ -80,7 +80,8 @@ img {
 
 .studio :focus-visible,
 .site-footer :focus-visible,
-.mobile-menu :focus-visible {
+.mobile-menu :focus-visible,
+.menu-open .site-header :focus-visible {
     outline-color: var(--yellow);
 }
 
@@ -938,7 +939,7 @@ img {
 }
 
 .faq-item summary::after {
-    color: var(--coral);
+    color: var(--ink);
     font-size: 1.6rem;
     font-weight: 300;
     content: '+';
