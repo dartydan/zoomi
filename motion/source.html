@@ -253,8 +253,10 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
     // ---- primitives
     // tone(t, { f, type, dur, gain, a, hold, pan, verb, bus, filter, f2 (filter freq), q, detune })
     function tone(time, p) {
-      const t = at(time), dur = p.dur || 0.2;
+      let t = at(time), dur = p.dur || 0.2;
       if (t + dur < ctx.currentTime || (time < T0 - 0.001 && dur < 1.5)) return;
+      // a long sound already underway when playback resumes mid-score: start it now with its remaining length
+      if (t < ctx.currentTime) { dur -= ctx.currentTime - t; t = ctx.currentTime; }
       const osc = ctx.createOscillator(); osc.type = p.type || 'sine';
       sweep(osc.frequency, Array.isArray(p.f) ? p.f.map(([d, v]) => [d, hz(v)]) : hz(p.f || 440), t);
       if (p.detune) osc.detune.value = p.detune;
@@ -266,8 +268,10 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
     }
     // noise(t, { dur, color, filter, f, q, gain, a, hold, pan, verb, bus, rate })
     function noise(time, p) {
-      const t = at(time), dur = p.dur || 0.2;
+      let t = at(time), dur = p.dur || 0.2;
       if (t + dur < ctx.currentTime || (time < T0 - 0.001 && dur < 1.5)) return;
+      // a long sound already underway when playback resumes mid-score: start it now with its remaining length
+      if (t < ctx.currentTime) { dur -= ctx.currentTime - t; t = ctx.currentTime; }
       const src = ctx.createBufferSource(); src.buffer = noiseBuf[p.color || 'white']; src.loop = true;
       if (p.rate) src.playbackRate.value = p.rate;
       const g = ctx.createGain(); shape(g.gain, t, gainOf(p, 0.3), dur, p.a, p.hold);
@@ -1187,7 +1191,7 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
   window.DURATION = DURATION; window.scoreSound = scoreSound;
   const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
   const playB = document.getElementById('play'), scrub = document.getElementById('scrub'), timeE = document.getElementById('time'), sndB = document.getElementById('snd'), loopB = document.getElementById('loop');
-  let t = 0, playing = false, t0 = 0, w0 = 0, stopSound = null, sound = true, loop = true, ready = false;
+  let t = 0, playing = false, t0 = 0, w0 = 0, stopSound = null, sound = true, loop = true, ready = false, raf = 0;
   const draw = (tt) => { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none'; ctx.clearRect(0, 0, 1280, 720); ZX.draw(ctx, tt); };
   const ui = () => { scrub.value = Math.round(t / DURATION * 1000); timeE.textContent = `${t.toFixed(1)} / ${DURATION.toFixed(1)} s`; playB.textContent = playing ? 'Pause' : 'Play'; };
   const stopS = () => { if (stopSound) { stopSound(); stopSound = null; } };
@@ -1197,10 +1201,10 @@ input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
     if (!playing) return;
     t = t0 + (now - w0) / 1000;
     if (t >= DURATION) { if (loop) { t = 0; t0 = 0; w0 = now; startS(); } else { t = DURATION; playing = false; stopS(); } }
-    draw(t); ui(); requestAnimationFrame(frame);
+    draw(t); ui(); raf = requestAnimationFrame(frame);
   };
-  const play = () => { if (!ready) return; if (t >= DURATION) t = 0; playing = true; t0 = t; w0 = performance.now(); startS(); ui(); requestAnimationFrame(frame); };
-  const pause = () => { playing = false; stopS(); ui(); };
+  const play = () => { if (!ready) return; if (t >= DURATION) t = 0; playing = true; t0 = t; w0 = performance.now(); startS(); ui(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
+  const pause = () => { playing = false; cancelAnimationFrame(raf); stopS(); ui(); };
   playB.onclick = () => (playing ? pause() : play());
   scrub.oninput = () => { const was = playing; pause(); window.seek(scrub.value / 1000 * DURATION); if (was) play(); };
   sndB.onclick = () => { sound = !sound; sndB.setAttribute('aria-pressed', sound); sndB.textContent = sound ? 'Sound on' : 'Sound off'; if (sound) startS(); else stopS(); };
