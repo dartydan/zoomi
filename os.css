@@ -944,12 +944,8 @@ img {
 
 .audit-band-inner {
     display: grid;
-    grid-template-columns: 1.45fr 3fr 1.6fr;
+    grid-template-columns: 3fr 1.6fr;
     gap: 2rem;
-}
-
-.audit-band .section-index::before {
-    background: var(--yellow);
 }
 
 .audit-band h2 {
@@ -1574,11 +1570,7 @@ img {
     }
 
     .audit-band-inner {
-        grid-template-columns: 1fr 2fr;
-    }
-
-    .audit-band-inner > .section-index {
-        grid-column: 1 / -1;
+        grid-template-columns: 1.6fr 1fr;
     }
     .site-header {
         grid-template-columns: 1fr auto;
