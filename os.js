@@ -75,4 +75,10 @@ if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
     animateGlow();
 }
 
+const heroVideo = document.querySelector('.art-video');
+
+if (heroVideo && !reduceMotion) {
+    heroVideo.play().catch(() => {});
+}
+
 document.querySelector('#year').textContent = new Date().getFullYear();

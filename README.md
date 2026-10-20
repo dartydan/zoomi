@@ -57,3 +57,11 @@ The site is served as static files through GitHub Pages. `CNAME` points to
 - The visible FAQ mirrors the FAQPage schema; keep them in sync.
 - `robots.txt` explicitly allows AI search crawlers; `llms.txt` gives answer
   engines a plain-text summary; `sitemap.xml` lists only canonical URLs.
+
+## Hero motion
+
+The hero board plays `motion/hero-motion.webm` / `.mp4` (9s loop, muted,
+no audio) with `motion/hero-motion-poster.jpg` as the poster. It only starts
+from `os.js`, so visitors with reduced motion (or no JS) see the poster.
+`motion/source.html` is the frame-accurate source: render it with Playwright
+by calling `render(t)` per frame, then encode with ffmpeg.
