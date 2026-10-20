@@ -1,12 +1,11 @@
 # Zoomi
 
-> Zoomi (Zoomi, LLC) is a design-led marketing company based in Indiana, USA. It designs brand identities, websites, and marketing campaigns, and manages search visibility with its own SEO software, Zoomi Audit.
+> Zoomi (Zoomi, LLC) is a design-led marketing company based in Indiana, USA. It designs brand identities and websites, plans marketing strategy, and manages search visibility with its own SEO software, Zoomi Audit.
 
 ## Services
 
 - Brand identity: logo and identity systems, brand guidelines, messaging and voice.
 - Websites: design and build, landing pages, technical SEO foundations.
-- Campaigns and content: paid and social creative, email and print, launch campaigns.
 - Strategy and growth: positioning, marketing roadmaps, analytics and reporting.
 
 ## Software

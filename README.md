@@ -1,7 +1,7 @@
 # Zoomi — zoomi.co
 
 The homepage for **Zoomi, LLC**. It leads with **Zoomi Marketing**, a
-design-led marketing studio (brand identity, websites, campaigns, strategy),
+design-led marketing studio (brand identity, websites, strategy),
 with Zoomi Audit positioned as the SEO software upsell. The other ventures sit
 lower on the page:
 

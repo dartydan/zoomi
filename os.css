@@ -859,7 +859,7 @@ img {
 .service-grid {
     display: grid;
     border-top: 1px solid var(--ink);
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .service-card {
@@ -1563,18 +1563,6 @@ img {
 @media (max-width: 1050px) {
     .hero-grid.hero-grid--film {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .service-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .service-card:nth-child(2) {
-        border-right: 0;
-    }
-
-    .service-card:nth-child(3) {
-        padding-left: 0;
     }
 
     .audit-band-inner {
