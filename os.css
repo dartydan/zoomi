@@ -728,7 +728,7 @@ img {
     gap: 0.75rem;
     padding: 0.95rem 1.35rem;
     border-radius: 999px;
-    color: var(--white);
+    color: var(--ink);
     background: var(--coral);
     font-family: var(--mono);
     font-size: 0.68rem;
@@ -753,6 +753,7 @@ img {
 }
 
 .button-primary--ink {
+    color: var(--white);
     background: var(--ink);
 }
 
