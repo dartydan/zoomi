@@ -423,6 +423,12 @@ img {
     gap: 1rem;
 }
 
+.film-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.film-play,
 .film-sound {
     padding: 0.2rem 0;
     border: 0;
@@ -435,6 +441,7 @@ img {
     cursor: pointer;
 }
 
+.film-play:focus-visible,
 .film-sound:focus-visible {
     outline-color: var(--yellow);
 }

@@ -77,6 +77,25 @@ if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
 
 const heroVideo = document.querySelector('.art-video');
 
+const filmPlay = document.querySelector('.film-play');
+
+const syncFilmPlay = () => {
+    if (filmPlay) filmPlay.textContent = heroVideo.paused ? 'Play' : 'Pause';
+};
+
+if (heroVideo) {
+    heroVideo.addEventListener('play', syncFilmPlay);
+    heroVideo.addEventListener('pause', syncFilmPlay);
+    syncFilmPlay();
+}
+
+if (heroVideo && filmPlay) {
+    filmPlay.addEventListener('click', () => {
+        if (heroVideo.paused) heroVideo.play().catch(() => {});
+        else heroVideo.pause();
+    });
+}
+
 if (heroVideo && !reduceMotion) {
     heroVideo.play().catch(() => {});
 }
