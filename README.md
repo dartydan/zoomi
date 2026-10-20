@@ -47,9 +47,3 @@ Then open `http://127.0.0.1:4173`.
 
 The site is served as static files through GitHub Pages. `CNAME` points to
 `zoomi.co`; `robots.txt` and `sitemap.xml` are served from the repository root.
-
-## Photography
-
-Section photos in `photos/site/` are from [Unsplash](https://unsplash.com)
-under the Unsplash License (free for commercial use, no attribution required).
-They are cropped into arch, circle, leaf and tilted shapes.
