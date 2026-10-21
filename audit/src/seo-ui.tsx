@@ -165,9 +165,10 @@ export function ResearchStatus({
       )}
       {cap && !(backlinks ? cap.backlinksConfigured : cap.configured) && (
         <div className="configuration-note">
-          {backlinks ? "Backlink data" : "Search rankings and competitor data"}{" "}
-          is awaiting Zoomi’s licensed data connection. Saved reports stay
-          available. You can prepare your keywords and competitor watchlist now.
+          Audit collects its own data. Direct search-result collection is not
+          active yet, so new rank checks are unavailable. Your keyword list and
+          saved history remain available. Backlinks and Competitors use our
+          website crawler.
         </div>
       )}
       {!project.verifiedAt && (
@@ -344,14 +345,16 @@ export function ResultTable<T>({
   headers,
   render,
   empty = "No matching rows in this saved dataset.",
+  pageSize = 25,
 }: {
   rows: T[];
   headers: string[];
   render: (row: T, index: number) => ReactNode;
   empty?: string;
+  pageSize?: number;
 }) {
   const [page, setPage] = useState(0);
-  const pages = Math.ceil(rows.length / 25);
+  const pages = Math.ceil(rows.length / pageSize);
   const current = Math.min(page, Math.max(0, pages - 1));
   return (
     <>
@@ -372,8 +375,8 @@ export function ResultTable<T>({
             </thead>
             <tbody>
               {rows
-                .slice(current * 25, (current + 1) * 25)
-                .map((r, i) => render(r, current * 25 + i))}
+                .slice(current * pageSize, (current + 1) * pageSize)
+                .map((r, i) => render(r, current * pageSize + i))}
             </tbody>
           </table>
         </div>

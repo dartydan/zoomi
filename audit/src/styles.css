@@ -2870,3 +2870,31 @@ form select {
 .seo-page table {
   min-width: 640px;
 }
+
+.collection-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.collection-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--border, #e4e7ec);
+  border-radius: 12px;
+}
+.collection-metrics strong {
+  font-size: 28px;
+}
+.collection-metrics span {
+  font-size: 13px;
+  color: var(--muted, #667085);
+}
+@media (max-width: 600px) {
+  .collection-metrics {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

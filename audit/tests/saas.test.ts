@@ -641,6 +641,76 @@ test("research APIs keep keyword settings, history, competitors and reports priv
     200,
   );
 });
+test("owned collection endpoints require sessions and ownership and preserve unavailable search measurements", async () => {
+  const path = `/api/projects/${project}`;
+  assert.equal((await request(path + "/collection")).status, 401);
+  assert.equal(
+    (await request(path + "/collection", "GET", undefined, bob)).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        path + "/collection/sources",
+        "POST",
+        { url: "source.com" },
+        bob,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        path + "/collection/sources",
+        "POST",
+        { url: "source.com" },
+        alice,
+      )
+    ).status,
+    201,
+  );
+  const state = await request(path + "/collection", "GET", undefined, alice);
+  assert.equal(state.status, 200);
+  assert.ok(state.body.sources.some((s: any) => s.domain === "source.com"));
+  assert.equal(state.body.pages, 0);
+  assert.equal(
+    (
+      await request(
+        path + "/collection/links?offset=-1",
+        "GET",
+        undefined,
+        alice,
+      )
+    ).status,
+    422,
+  );
+  assert.equal(
+    (
+      await request(
+        path + "/collection/pages?domain=source.com",
+        "GET",
+        undefined,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  const cap = await request(
+    path + "/seo/capabilities",
+    "GET",
+    undefined,
+    alice,
+  );
+  assert.equal(cap.body.configured, false);
+  assert.equal(cap.body.backlinksConfigured, false);
+  assert.equal(
+    (await request(path + "/seo/jobs", "POST", { kind: "ranks" }, alice))
+      .status,
+    422,
+  );
+});
+
 test("sign-out invalidates the customer session and password sign-in works", async () => {
   assert.equal(
     (await request("/api/auth/sign-out", "POST", {}, alice)).status,

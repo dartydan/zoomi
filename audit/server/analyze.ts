@@ -29,12 +29,45 @@ export function analyzePage(
     }
   });
   const links = new Set<string>();
+  const outgoing = new Map<
+    string,
+    { url: string; anchor: string; rel: string[] }
+  >();
+  let outgoingLinksTruncated = false;
+  let base = url;
+  try {
+    base = new URL($("base[href]").first().attr("href") ?? url, url).href;
+  } catch {
+    /* Use the response URL. */
+  }
   $("a[href]").each((_, el) => {
     try {
-      const href = new URL($(el).attr("href")!, url);
+      const href = new URL($(el).attr("href")!, base);
       // Cloudflare's encoded email links are decoded by the browser, not pages.
       if (href.pathname === "/cdn-cgi/l/email-protection" && href.hash) return;
       href.hash = "";
+      if (
+        ["http:", "https:"].includes(href.protocol) &&
+        !href.username &&
+        !href.password &&
+        href.href.length <= 2048
+      ) {
+        const rel = ($(el).attr("rel") ?? "")
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 20);
+        const existing = outgoing.get(href.href);
+        if (existing)
+          existing.rel = [...new Set([...existing.rel, ...rel])].slice(0, 20);
+        else if (outgoing.size < 500)
+          outgoing.set(href.href, {
+            url: href.href,
+            anchor: $(el).text().replace(/\s+/g, " ").trim().slice(0, 500),
+            rel,
+          });
+        else outgoingLinksTruncated = true;
+      }
       if (
         href.origin === new URL(url).origin &&
         ["http:", "https:"].includes(href.protocol) &&
@@ -77,6 +110,9 @@ export function analyzePage(
     schema: schema.length > 0,
     invalidSchema,
     links: [...links].slice(0, 1000),
+    observedAt: new Date().toISOString(),
+    outgoingLinks: [...outgoing.values()],
+    outgoingLinksTruncated,
   };
 }
 const issue = (

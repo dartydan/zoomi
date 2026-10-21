@@ -171,7 +171,7 @@ export default function Automation({
                 {s.kind === "audit"
                   ? "Find new problems and confirm improvements without remembering to start another scan. Scheduled audits use your monthly allowance."
                   : s.kind === "ranks"
-                    ? "Check active keywords on a schedule. Each keyword uses one search-data request. Requires verified ownership, an active subscription and Zoomi’s licensed data connection. Results appear in Rank tracking."
+                    ? "Save your preferred ranking schedule. Checks remain inactive until Audit’s direct search-result collector is ready. Website audits already collect page and link evidence."
                     : "Refresh the Search Console and Analytics properties you have connected. Google’s reporting delay still applies."}
               </p>
               <label>

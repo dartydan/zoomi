@@ -1,53 +1,40 @@
-# Search intelligence
+# Zoomi-owned search intelligence
 
-Audit now includes keyword rank tracking, backlink analysis, and saved competitor research. The customer interface, private records, background jobs and tests are implemented. Live provider access has not been activated or exercised; no paid requests were sent during development.
+The owner has chosen to make Audit the data collector. No third-party SEO aggregation or backlink-data service is used. The network transport and admission paths for licensed SEO requests have been removed. Old credentials cannot enable them. Historical reports, saved keywords and competitor watchlists remain readable; queued legacy research fails without contacting an aggregator.
 
-## What customers can do
+## Working collection path
 
-- Save up to 50 active keyword/country/device combinations per website; pause, resume or remove them. Pausing preserves history; removing deletes it after confirmation. Up to 200 saved combinations, including paused ones.
-- Check Google organic positions for English searches in the US, UK, Canada or Australia on desktop or mobile. Each check requests depth 100, matches the website and its subdomains, and stores actual returned coverage, the leading ten organic results, and positions for up to five saved competitors. Ads and other SERP features do not count as organic positions.
-- Review up to 90 saved checks per keyword, compare the two most recent positions, and schedule daily, weekly or monthly checks in the customer’s timezone. Missing results remain null, never position zero or an assumed position outside the top 100.
-- Save backlink totals and provider strength estimates; browse up to 100 live backlinks, 100 referring domains and 100 explicitly lost backlinks per check. Inspect anchors, destinations, follow status, broken-link flags and last-seen dates. Internal backlinks are excluded and subdomains are included. Compare totals with an earlier complete report as net changes, not counts of newly acquired or lost links.
-- Save five competitors, discover up to 20 organic search competitors, and research each competitor’s domain visibility, up to 50 strongest pages, up to 100 ranked keywords, 100 missing keywords and 100 shared keywords. The weaker-ranking view filters that shared-keyword sample. Add a research keyword to desktop rank tracking in the report’s country.
-- Filter, paginate and export displayed research to CSV. Formula-like spreadsheet cells are escaped. Saved reports remain readable if a subscription becomes inactive.
+- Every new website audit also records page and outgoing-link evidence in Audit’s database.
+- Backlinks lets a customer save up to 25 additional public source websites/pages. Competitor watchlists support five domains. The verified website itself is also a source.
+- Customers choose a saved source and a 100–10,000 page crawl allowance. Research shares the existing account limit of 30 crawls per UTC calendar month with audits. These are initial operational limits, not settled product pricing.
+- The crawler collects static HTML, discovers same-origin links and sitemap URLs, respects robots rules and crawl delays, and uses bounded requests, public-IP checks, pinned DNS and redirect validation. Collection jobs stay on the chosen domain (with www equivalence); they do not fan out across the web automatically.
+- Fenced Workflow batches save crawl progress and evidence in one database transaction. Duplicate completion is safe; cancellation prevents late checkpoints. A five-minute domain lease coordinates concurrent customers targeting the same host. The runtime retains the audit recovery outbox/cron.
+- Page evidence includes URL, title, description, H1 headings, word count, HTTP status, noindex flag and actual page observation time. The UI paginates results and exports the current result page.
+- Link evidence includes source URL, destination URL, anchor, rel attributes and first seen/last seen/last checked times. Duplicate links to a destination on one source page are collapsed; rel flags are combined conservatively. Incoming-link reports match the customer’s exact domain/subdomains and exclude internal links.
+- Only a successfully rechecked source page with a complete link extraction can establish that a previously observed link is now missing. Unvisited, failed, blocked or truncated pages do not imply lost links. Reappearance retains first seen; older observations cannot replace newer evidence.
+- Page/link evidence is scoped to the owning project. Google analytics, tokens and customer research are never shared between accounts. No shared public index or customer-data reuse is implied.
 
-These are bounded views of a licensed provider’s index, not exhaustive competitor inventories. Research traffic and search volumes are estimates, not analytics from the competitor’s account. Device-specific rank checks are distinct from Search Console’s averaged positions. Research reports display their collection time; keyword exports also retain the provider’s keyword-data update time. Backlink discovery timestamps are provider observations, not necessarily creation dates.
+## Honest boundaries
 
-## Activation
+This is the first owned collection layer, not a finished global search index. Backlinks are observations within the pages visited, not total backlinks across the web. Crawling a customer’s own site cannot discover all pages that link to it. Customers can seed relevant directories, partners and known referring pages; broad discovery is future work.
 
-Use the existing Vercel workspace. There is no hosting migration or automatic plan upgrade in this change. Production also requires the database and launch configuration described in LAUNCH.md.
+Competitor pages show content evidence, not search rankings, keyword volumes, traffic estimates, difficulty or authority scores. HTML titles and headings are not relabeled as ranking keywords. The crawler does not execute JavaScript, does not crawl query-string pages, caps extraction at 500 distinct link destinations per page (with a truncation flag), and uses the existing 2 MB response limit. Old audits are not retroactively treated as complete link evidence; run a fresh crawl.
 
-Set these server-only environment values after the owner approves provider access and a spend budget:
+Saved rank lists and schedule preferences remain available, but new rank checks are explicitly unavailable. The existing Google connection supplies customer-authorized Search Console average positions; those are not device/location-specific SERP observations. A reliable direct search-result collector, regional execution, parsing with blocked/empty-response detection and coverage-aware observations still need implementation and validation. Do not substitute fake positions or silently re-enable paid APIs.
 
-```
-DATAFORSEO_LOGIN=
-DATAFORSEO_PASSWORD=
-DATAFORSEO_DAILY_REQUEST_LIMIT=0
-DATAFORSEO_USER_DAILY_REQUEST_LIMIT=100
-DATAFORSEO_BACKLINKS_ENABLED=false
-```
+## Next collection stages
 
-A platform limit of zero disables external requests. Backlinks require a separate explicit enable flag because provider product access must be checked. Every new report requires an active subscription and verified website ownership. Customers can save keyword/watchlist/schedule preferences before activation.
+1. Crawl-frontier expansion, deterministic recrawl schedules, crawl-event history, parser versions and a measured retention policy.
+2. A separately governed public link graph with proven ownership/privacy separation, domain-wide scheduling, removal controls and scalable storage. Current tables are intentionally project-private.
+3. Direct search-result observations with explicit source, timestamp, engine, country/device and coverage. Confirm permitted collection before production operation; stop on challenges instead of reporting empty rankings. Google’s [published automated traffic policy](https://developers.google.com/search/docs/essentials/spam-policies#machine-generated-traffic) and [robots standard](https://www.rfc-editor.org/rfc/rfc9309.html) inform access handling.
+4. Derived competitor overlap, link opportunities and content comparisons based on measured coverage. Demand and traffic metrics require independent evidence.
 
-The caps count **requests, not dollars**. One rank keyword consumes one request; discovery uses one, backlinks four, and a competitor profile six. A depth-100 SERP call can be billed for multiple result pages. Establish the spend ceiling in the provider account, confirm its current endpoint/depth prices and product access, then choose platform and customer caps. Do not infer a monetary maximum from request counts. All modules, including the older keyword-gap endpoint, share the same atomic platform/customer allowance. Failed and uncertain attempts count too. Allowances reset at midnight UTC.
+## Hosting, costs and validation
 
-## Reliability and storage
+No data-provider account, API credit or SEO subscription is required. Owned collection instead consumes crawler execution, bandwidth, database/index storage and operational effort. Do not promise a per-site cost before measuring representative workloads. The existing local workspace and Vercel app remain the starting point; a broad internet index will require additional capacity planning. No infrastructure has been purchased or upgraded.
 
-`tracked_keywords`, `rank_observations`, `competitors`, `seo_jobs`, and additional `provider_calls` columns are created by the existing idempotent migration. Run the migration before deploying this change against an existing production database. All customer routes first authenticate and verify project ownership. Job reads/cancellation and keyword history also check the record’s owner/project.
+Run the explicit migration before production deployment. Tests use injected HTML transports and isolated temporary databases, covering extraction, link disappearance/reappearance, source/owner isolation, robots denial, redirect scope, host leases, cancellation, retries and aggregator retirement. Real production storage, Workflow throughput, large-crawl cost, retention and live search-result collection still require validation.
 
-One search-data job per account can be active at a time. Each Vercel Workflow step handles one bounded provider request with a five-minute fenced lease. The cron outbox recovers interrupted dispatch and expired leases. Deterministic workflow hooks reject duplicate active runs. Request results are saved before job checkpoints. Recovery can reuse a successful result after a crash; a pending/uncertain paid attempt is **never automatically submitted again**. This can leave a section unavailable after a network or storage failure; the UI explains that a fresh check can be requested tomorrow.
+## Validation of this change
 
-Jobs with matching parameters reuse the saved UTC-day report. Rank requests additionally deduplicate per keyword/day even when the list changes. A running rank job uses its admission-time keyword and competitor list. Pausing schedules/keywords affects future admission. Cancelling a job prevents subsequent steps and fences late writes; an already submitted provider request may still be billed. Paid access and ownership verification are rechecked before each step. Partial reports retain successful sections and explicit failures. No failed request is turned into an empty/zero measurement.
-
-Parsed results, not raw SERPs, are stored. Each response has an 8 MB transport bound, URLs and strings are bounded, report rows are capped, and keyword-list responses omit full SERP details. Keyword detail history is bounded to 90 checks and report selectors to 30 recent checks. Older stored records are not automatically purged; establish a retention policy and monitor database size before scale.
-
-## Provider contract references
-
-The integration follows the public DataForSEO v3 contracts:
-
-- [Google organic live advanced](https://docs.dataforseo.com/v3/serp/google/organic/live/advanced/): organic `rank_group`, requested depth and device settings.
-- [Backlink summary](https://docs.dataforseo.com/v3/backlinks/summary/live/), [backlink rows](https://docs.dataforseo.com/v3/backlinks/backlinks/live/), and [referring domains](https://docs.dataforseo.com/v3/backlinks/referring_domains/live/): live/lost scopes, subdomains and `one_hundred` rank scale.
-- [Competitor discovery](https://docs.dataforseo.com/v3/dataforseo_labs/google/competitors_domain/live/): overlapping keywords and full-domain metrics.
-- [Domain overview](https://docs.dataforseo.com/v3/dataforseo_labs/google/domain_rank_overview/live/), [relevant pages](https://docs.dataforseo.com/v3/dataforseo_labs/google/relevant_pages/live/), [ranked keywords](https://docs.dataforseo.com/v3/dataforseo_labs/google/ranked_keywords/live/) and [keyword intersection](https://docs.dataforseo.com/v3/dataforseo_labs/google/domain_intersection/live/): saved country-level research datasets.
-
-Before launch, run owner-approved low-volume staging checks with the real provider account, verify billing/depth charges and data shapes against known websites, test Workflow/cron recovery on Vercel, and confirm source dates and unavailable states in the UI. The automated suite uses injected fixture transports and makes no paid calls.
+All 70 automated checks and the production Next.js/Workflow build pass. A live, isolated crawl of `https://zoomi.co/` completed and indexed three discovered pages and six link records; its temporary test database was removed afterward. This proves direct collection and storage on a small real site, not broad backlink coverage or 10,000-page capacity. Browser inspection of the updated screens was blocked by the desktop browser URL policy, so visual verification remains outstanding.

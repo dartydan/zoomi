@@ -65,7 +65,9 @@ export default function RankTracking({ project }: { project: Project }) {
         }),
       );
       setKeyword("");
-      setNotice("Keyword saved. It will be included in your next rank check.");
+      setNotice(
+        "Keyword saved. Measurements will begin when Audit’s direct search-result collector is ready.",
+      );
     } catch (e) {
       state.setError(
         e instanceof Error ? e.message : "Could not save keyword.",

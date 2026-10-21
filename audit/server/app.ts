@@ -10,6 +10,7 @@ import { verifySite } from "./verification.ts";
 import * as google from "./google.ts";
 import * as billing from "./billing.ts";
 import * as research from "./research.ts";
+import { collectionRoutes } from "./collection-routes";
 import { seoRoutes } from "./seo-routes";
 import { listSchedules, saveSchedule } from "./schedules";
 import { compareAudits, type ChangeStatus } from "./comparison";
@@ -88,8 +89,9 @@ app.use("/api", async (req, res, next) => {
 app.use("/api", async (req, res, next) => {
   const user = res.locals.user.id;
   const expensive =
-    /\/(sync|verify|keyword-gap|properties|seo\/jobs)$/.test(req.path) &&
-    req.method !== "GET";
+    /\/(sync|verify|keyword-gap|properties|seo\/jobs|collection\/jobs)$/.test(
+      req.path,
+    ) && req.method !== "GET";
   const key = `${user}:${expensive ? "expensive" : /\/audits\/[^/]+$/.test(req.path) && req.method === "GET" ? "report" : "general"}`;
   const bucket = Math.floor(Date.now() / 60000);
   const reportRead = req.method === "GET" && /\/audits\/[^/]+$/.test(req.path);
@@ -211,6 +213,7 @@ app.use("/api/projects/:projectId", async (req, res, next) => {
   next();
 });
 app.use("/api/projects/:projectId", seoRoutes);
+app.use("/api/projects/:projectId", collectionRoutes);
 app.post("/api/projects/:projectId/verify", async (_req, res) => {
   const p = res.locals.project as ProjectRow;
   await verifySite(p);
@@ -335,7 +338,8 @@ app.get("/api/projects/:projectId/audits/:id", async (req, res) => {
       "SELECT data FROM audits WHERE owner_id=? AND project_id=? AND id=?",
     )
     .get(res.locals.user.id, res.locals.project.id, req.params.id)) as
-    { data: string } | undefined;
+    | { data: string }
+    | undefined;
   if (!row) return res.status(404).json({ error: "Audit not found." });
   if (Buffer.byteLength(row.data) > 2000000)
     return res
@@ -348,7 +352,7 @@ app.get("/api/projects/:projectId/jobs", async (_req, res) =>
     (
       (await db
         .prepare(
-          "SELECT * FROM jobs WHERE owner_id=? AND project_id=? ORDER BY created_at DESC LIMIT 20",
+          "SELECT * FROM jobs WHERE owner_id=? AND project_id=? AND purpose='audit' ORDER BY created_at DESC LIMIT 20",
         )
         .all(res.locals.user.id, res.locals.project.id)) as Job[]
     ).map(jobView),
@@ -403,7 +407,8 @@ app.patch(
           "SELECT data FROM audits WHERE id=? AND project_id=? AND owner_id=?",
         )
         .get(req.params.id, res.locals.project.id, res.locals.user.id)) as
-        { data: string } | undefined;
+        | { data: string }
+        | undefined;
       if (!row) return { status: 404, body: { error: "Audit not found." } };
       const audit = JSON.parse(row.data) as Audit;
       if (
@@ -480,7 +485,8 @@ app.get("/api/projects/:projectId/metrics", async (_req, res) => {
   const row = (await db
     .prepare("SELECT data FROM metrics WHERE project_id=? AND owner_id=?")
     .get(res.locals.project.id, res.locals.user.id)) as
-    { data: string } | undefined;
+    | { data: string }
+    | undefined;
   res.json(row ? JSON.parse(row.data) : null);
 });
 app.get("/api/projects/:projectId/research", async (_req, res) =>

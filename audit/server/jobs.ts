@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { db, type ProjectRow } from "./database.ts";
+import { db, ownedProject, type ProjectRow } from "./database.ts";
 import { crawlBatch, type CrawlState } from "./crawler.ts";
 import { limits } from "./config.ts";
 import { entitled } from "./billing.ts";
 import { safeFetch } from "./network.ts";
+import { indexPages, sources } from "./collection";
+import { seoDomain } from "./seo-provider";
 export interface Job {
   id: string;
   project_id: string;
@@ -18,6 +20,8 @@ export interface Job {
   updated_at: string;
   lease_token?: string | null;
   lease_until?: number | null;
+  purpose?: string;
+  target_url?: string | null;
 }
 export const jobView = (j: Job) => ({
   id: j.id,
@@ -29,14 +33,33 @@ export const jobView = (j: Job) => ({
   error: j.error,
   createdAt: j.created_at,
   updatedAt: j.updated_at,
+  purpose: j.purpose ?? "audit",
+  targetUrl: j.target_url ?? null,
 });
 export async function enqueue(
   owner: string,
   p: ProjectRow,
   pageLimit: number,
   now = new Date(),
+  collectionDomain?: string,
 ) {
   return db.transaction(async () => {
+    const current = await ownedProject(owner, p.id);
+    if (!current?.verified_at)
+      throw new Error("Verify your website before collecting pages.");
+    if (!(await entitled(owner)))
+      throw new Error("An active subscription is required to collect pages.");
+    if (
+      !Number.isInteger(pageLimit) ||
+      pageLimit < 100 ||
+      pageLimit > limits.pages
+    )
+      throw new Error("Choose between 100 and 10,000 pages.");
+    const source = collectionDomain
+      ? (await sources(owner, p.id)).find((s) => s.domain === collectionDomain)
+      : undefined;
+    if (collectionDomain && !source)
+      throw new Error("Save this source website before collecting its pages.");
     if (
       await db
         .prepare(
@@ -45,7 +68,7 @@ export async function enqueue(
         .get(owner)
     )
       throw new Error(
-        "Your existing audit must finish before starting another.",
+        "Your existing crawl must finish before starting another.",
       );
     const start = new Date(now);
     start.setUTCDate(1);
@@ -56,7 +79,7 @@ export async function enqueue(
       )
       .get(owner, start.toISOString());
     if (Number(used.n) >= limits.crawlsPerMonth)
-      throw new Error("Your monthly audit allowance has been used.");
+      throw new Error("Your monthly crawl allowance has been used.");
     const job: Job = {
       id: randomUUID(),
       project_id: p.id,
@@ -69,10 +92,12 @@ export async function enqueue(
       error: null,
       created_at: now.toISOString(),
       updated_at: now.toISOString(),
+      purpose: collectionDomain ? "collection" : "audit",
+      target_url: source?.url ?? current.url,
     };
     await db
       .prepare(
-        "INSERT INTO jobs(id,project_id,owner_id,status,page_limit,pages_done,discovered,checkpoint,error,created_at,updated_at) VALUES(@id,@project_id,@owner_id,@status,@page_limit,@pages_done,@discovered,@checkpoint,@error,@created_at,@updated_at)",
+        "INSERT INTO jobs(id,project_id,owner_id,status,page_limit,pages_done,discovered,checkpoint,error,created_at,updated_at,purpose,target_url) VALUES(@id,@project_id,@owner_id,@status,@page_limit,@pages_done,@discovered,@checkpoint,@error,@created_at,@updated_at,@purpose,@target_url)",
       )
       .run(job);
     return jobView(job);
@@ -114,26 +139,75 @@ export async function runBatch(
       throw new Error(
         "An active subscription is required to continue this audit. Your saved progress is preserved.",
       );
+    const target = job.target_url ?? p.url;
+    const domain = seoDomain(target);
+    if (
+      job.purpose === "collection" &&
+      !(await sources(job.owner_id, p.id)).some((s) => s.domain === domain)
+    )
+      throw new Error(
+        "This collection source was removed. Start a new crawl from a saved source.",
+      );
+    const host = await db
+      .prepare(
+        "INSERT INTO crawl_host_leases(domain,token,lease_until) VALUES(?,?,?) ON CONFLICT(domain) DO UPDATE SET token=excluded.token,lease_until=excluded.lease_until WHERE crawl_host_leases.lease_until<? RETURNING token",
+      )
+      .get(domain, token, Date.now() + 5 * 60000, Date.now());
+    if (!host) {
+      await db
+        .prepare(
+          "UPDATE jobs SET status='queued',lease_token=NULL,lease_until=NULL WHERE id=? AND lease_token=?",
+        )
+        .run(id, token);
+      return "busy";
+    }
+    const resume: CrawlState | undefined = job.checkpoint
+      ? JSON.parse(job.checkpoint)
+      : undefined;
+    let indexed = resume?.pages.length ?? 0;
     let savedAt = 0;
     const save = async (state: CrawlState) => {
-      const changed = await db
-        .prepare(
-          "UPDATE jobs SET checkpoint=?,pages_done=?,discovered=?,updated_at=? WHERE id=? AND status='running' AND lease_token=?",
-        )
-        .run(
-          JSON.stringify(state),
-          state.pages.length,
-          state.discovered,
-          new Date().toISOString(),
-          id,
-          token,
-        );
-      if (!changed.changes)
-        throw new Error("Audit was cancelled or resumed by another worker.");
+      await db.transaction(async () => {
+        const changed = await db
+          .prepare(
+            "UPDATE jobs SET checkpoint=?,pages_done=?,discovered=?,updated_at=? WHERE id=? AND status='running' AND lease_token=?",
+          )
+          .run(
+            // Link rows are committed alongside the checkpoint below. Do not
+            // duplicate the growing link graph in every resumed crawl payload.
+            JSON.stringify(state, (key, value) =>
+              key === "outgoingLinks" ? undefined : value,
+            ),
+            state.pages.length,
+            state.discovered,
+            new Date().toISOString(),
+            id,
+            token,
+          );
+        if (!changed.changes)
+          throw new Error("Audit was cancelled or resumed by another worker.");
+        await indexPages(job.owner_id, p.id, state.pages.slice(indexed));
+      }, `job:${id}`)();
+      for (const page of state.pages.slice(indexed)) delete page.outgoingLinks;
+      indexed = state.pages.length;
       savedAt = Date.now();
     };
-    const result = await crawlBatch(p.url, fetcher, job.page_limit, {
-      resume: job.checkpoint ? JSON.parse(job.checkpoint) : undefined,
+    const scopedFetch: typeof safeFetch = async (url, opts = {}) => {
+      const within = (value: string) => seoDomain(value) === domain;
+      if (job.purpose === "collection" && !within(url))
+        throw new Error("Collection stays on the selected website.");
+      const result = await fetcher(
+        url,
+        job.purpose === "collection"
+          ? { ...opts, allow: (u) => within(u) && (opts.allow?.(u) ?? true) }
+          : opts,
+      );
+      if (job.purpose === "collection" && !within(result.url))
+        throw new Error("Collection redirect leaves the selected website.");
+      return result;
+    };
+    const result = await crawlBatch(target, scopedFetch, job.page_limit, {
+      resume,
       signal,
       batchRequests,
       batchMilliseconds: 45_000,
@@ -167,7 +241,7 @@ export async function runBatch(
           id,
           token,
         );
-      if (claimed.changes) {
+      if (claimed.changes && job.purpose !== "collection") {
         // The job id is also the report id, making completion safe to retry.
         const audit = { ...result.audit!, id };
         await db
@@ -196,6 +270,8 @@ export async function runBatch(
       );
     if (signal.aborted) throw error;
     return "done";
+  } finally {
+    await db.prepare("DELETE FROM crawl_host_leases WHERE token=?").run(token);
   }
 }
 export async function markWorkflowFailed(id: string) {

@@ -18,8 +18,9 @@ const provider = await import("../server/seo-provider");
 const parse = await import("../server/seo-parsers");
 const seo = await import("../server/seo");
 const jobs = await import("../server/seo-jobs");
-const { saveSchedule, queueDueSchedules, listSchedules } =
-  await import("../server/schedules");
+const { saveSchedule, queueDueSchedules, listSchedules } = await import(
+  "../server/schedules"
+);
 const { csvText } = await import("../src/seo-ui");
 after(async () => {
   await db.close();
@@ -191,99 +192,26 @@ test("CSV exports neutralize spreadsheet formulas and quote embedded commas and 
   assert.ok(text.includes('"a,b"'));
   assert.ok(text.includes('"hello\nworld"'));
 });
-test("shared provider budget is atomic across customers; cached requests and uncertain outcomes never charge twice", async () => {
-  process.env.DATAFORSEO_DAILY_REQUEST_LIMIT = "1";
+test("retired aggregator cannot be re-enabled by credentials or an injected transport", async () => {
   let calls = 0;
-  const send = async () => {
-    calls++;
-    return envelope({ total_count: 0, items: [] });
-  };
-  const results = await Promise.allSettled([
-    provider.providerRequest(
-      "budget-a",
-      "budget-a:key",
-      "backlinks/backlinks/live",
-      {},
-      parse.parseBacklinks,
-      send,
-    ),
-    provider.providerRequest(
-      "budget-b",
-      "budget-b:key",
-      "backlinks/backlinks/live",
-      {},
-      parse.parseBacklinks,
-      send,
-    ),
-  ]);
-  assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
-  assert.equal(calls, 1);
-  const owner = results[0].status === "fulfilled" ? "budget-a" : "budget-b";
-  await provider.providerRequest(
-    owner,
-    owner + ":key",
-    "backlinks/backlinks/live",
-    {},
-    parse.parseBacklinks,
-    send,
-  );
-  assert.equal(calls, 1);
+  assert.equal(provider.researchReady(), false);
+  assert.equal(provider.backlinksReady(), false);
   await assert.rejects(
     () =>
       provider.providerRequest(
-        owner,
-        owner + ":key",
-        "backlinks/backlinks/live",
-        { limit: 50 },
-        parse.parseBacklinks,
-        send,
-      ),
-    /different settings/,
-  );
-  process.env.DATAFORSEO_DAILY_REQUEST_LIMIT = "500";
-  const fail = async () => {
-    calls++;
-    throw new Error("Timeout after remote billing");
-  };
-  await assert.rejects(
-    () =>
-      provider.providerRequest(
-        "uncertain",
-        "uncertain:key",
-        "backlinks/backlinks/live",
+        "owner",
+        "key",
+        "backlinks/summary/live",
         {},
-        parse.parseBacklinks,
-        fail,
+        parse.parseBacklinkSummary,
+        async () => {
+          calls++;
+          return envelope({});
+        },
       ),
-    /not been repeated/,
+    /collects its own/,
   );
-  await assert.rejects(
-    () =>
-      provider.providerRequest(
-        "uncertain",
-        "uncertain:key",
-        "backlinks/backlinks/live",
-        {},
-        parse.parseBacklinks,
-        send,
-      ),
-    /already attempted/,
-  );
-  assert.equal(calls, 2);
-  process.env.DATAFORSEO_USER_DAILY_REQUEST_LIMIT = "1";
-  await assert.rejects(
-    () =>
-      provider.providerRequest(
-        "uncertain",
-        "uncertain:another",
-        "backlinks/backlinks/live",
-        {},
-        parse.parseBacklinks,
-        send,
-      ),
-    /allowance/,
-  );
-  process.env.DATAFORSEO_USER_DAILY_REQUEST_LIMIT = "100";
+  assert.equal(calls, 0);
 });
 test("keyword normalization, owner isolation, country/device validation and concurrent limits", async () => {
   const p = await fixture("keywords", false, false);
@@ -350,217 +278,52 @@ test("competitor watchlists normalize domains and enforce ownership and capacity
   await seo.removeCompetitor("other", p.id, c.id);
   assert.equal((await seo.listCompetitors(p.id, p.id)).length, 5);
 });
-test("rank jobs deduplicate admission and leased execution, retain private history and replay checkpoints without charges", async () => {
-  const p = await fixture("rank");
-  const k = await seo.saveKeyword(p.id, p.id, keyword);
-  await seo.addCompetitor(p.id, p.id, "rival.com");
-  const [a, b] = await Promise.all([
-    jobs.enqueueSeo(p.id, p, "ranks"),
-    jobs.enqueueSeo(p.id, p, "ranks"),
-  ]);
-  assert.equal(a.id, b.id);
-  let begin!: () => void, release!: () => void;
-  const started = new Promise<void>((r) => (begin = r)),
-    gate = new Promise<void>((r) => (release = r));
-  let calls = 0;
-  const send = async () => {
-    calls++;
-    begin();
-    await gate;
-    return envelope(serp);
-  };
-  const work = jobs.runSeoStep(a.id, send);
-  await started;
-  assert.equal(await jobs.runSeoStep(a.id, send), "busy");
-  await assert.rejects(() => seo.removeKeyword(p.id, p.id, k), /finish/);
-  release();
-  assert.equal(await work, "done");
-  assert.equal(calls, 1);
-  const records = await seo.history(p.id, p.id, k);
-  assert.equal(records.length, 1);
-  assert.equal(records[0].position, 3);
-  assert.equal(records[0].competitors[0].position, 4);
-  assert.equal(await jobs.getSeoJob("other", p.id, a.id), null);
-  await db
-    .prepare("UPDATE seo_jobs SET status='queued',done=0,parts='[]' WHERE id=?")
-    .run(a.id);
-  assert.equal(await jobs.runSeoStep(a.id, send), "done");
-  assert.equal(calls, 1);
-  assert.equal((await seo.history(p.id, p.id, k)).length, 1);
-  assert.equal(
-    (await seo.listKeywords(p.id, p.id))[0].latest?.leadingResults.length,
-    0,
-  );
-});
-test("new day adds history; adding a keyword on the same day reuses earlier keyword checks", async () => {
-  const p = await fixture("history");
-  const first = await seo.saveKeyword(p.id, p.id, keyword);
-  let calls = 0;
-  const send = async () => {
-    calls++;
-    return envelope(serp);
-  };
-  const day = new Date();
-  const a = await jobs.enqueueSeo(p.id, p, "ranks", {}, day);
-  await jobs.runSeoStep(a.id, send);
-  await seo.saveKeyword(p.id, p.id, { ...keyword, keyword: "second" });
-  const b = await jobs.enqueueSeo(p.id, p, "ranks", {}, day);
-  while ((await jobs.runSeoStep(b.id, send)) === "more") {}
-  assert.equal(calls, 2);
-  const tomorrow = new Date(day.getTime() + 86400000);
-  const c = await jobs.enqueueSeo(p.id, p, "ranks", {}, tomorrow);
-  while ((await jobs.runSeoStep(c.id, send)) === "more") {}
-  assert.equal(calls, 4);
-  assert.equal((await seo.history(p.id, p.id, first)).length, 2);
-});
-test("cancelled jobs fence in-flight writes, and access revocation stops future paid tasks", async () => {
-  const p = await fixture("cancel");
-  await seo.saveKeyword(p.id, p.id, keyword);
-  const a = await jobs.enqueueSeo(p.id, p, "ranks");
-  let begin!: () => void, release!: () => void;
-  const started = new Promise<void>((r) => (begin = r)),
-    gate = new Promise<void>((r) => (release = r));
-  let calls = 0;
-  const work = jobs.runSeoStep(a.id, async () => {
-    calls++;
-    begin();
-    await gate;
-    return envelope(serp);
-  });
-  await started;
-  await jobs.cancelSeo(p.id, p.id, a.id);
-  release();
-  await work;
-  assert.equal((await jobs.getSeoJob(p.id, p.id, a.id))?.status, "cancelled");
-  assert.equal((await seo.listKeywords(p.id, p.id))[0].latest, null);
-  const q = await fixture("revoke");
-  await seo.saveKeyword(q.id, q.id, keyword);
-  const b = await jobs.enqueueSeo(q.id, q, "ranks");
-  await db
-    .prepare("UPDATE billing SET status='inactive' WHERE owner_id=?")
-    .run(q.id);
-  await jobs.runSeoStep(b.id, async () => {
-    calls++;
-    return envelope(serp);
-  });
-  assert.equal(calls, 1);
-  assert.equal((await jobs.getSeoJob(q.id, q.id, b.id))?.status, "failed");
-});
-test("backlink reports retain completed sections when one paid request fails; access is separately gated", async () => {
-  const p = await fixture("links");
-  process.env.DATAFORSEO_BACKLINKS_ENABLED = "false";
+test("legacy search jobs cannot send requests and saved rank preferences remain private", async () => {
+  const p = await fixture("retired");
+  const id = await seo.saveKeyword(p.id, p.id, keyword);
   await assert.rejects(
-    () => jobs.enqueueSeo(p.id, p, "backlinks"),
-    /activation/,
+    () => jobs.enqueueSeo(p.id, p, "ranks"),
+    /collects its own/,
   );
-  process.env.DATAFORSEO_BACKLINKS_ENABLED = "true";
-  const job = await jobs.enqueueSeo(p.id, p, "backlinks");
+  await assert.rejects(() => jobs.enqueueSeo("other", p, "ranks"), /not found/);
+  const stamp = new Date().toISOString();
+  await db
+    .prepare(
+      "INSERT INTO seo_jobs(id,project_id,owner_id,kind,status,params,tasks,period_key,total,created_at,updated_at) VALUES(?,?,?,'ranks','queued','{}','[]',?,1,?,?)",
+    )
+    .run("old", p.id, p.id, "old", stamp, stamp);
   let calls = 0;
-  const send = async (endpoint: string, body: Record<string, unknown>) => {
+  await jobs.runSeoStep("old", async () => {
     calls++;
-    assert.equal(body.rank_scale, "one_hundred");
-    assert.equal(body.exclude_internal_backlinks, true);
-    if (endpoint.endsWith("summary/live"))
-      return envelope({ backlinks: 100, referring_domains: 10, rank: 35 });
-    if (endpoint.includes("referring_domains"))
-      throw new Error("Account access");
-    return envelope({
-      total_count: 1,
-      items: [
-        {
-          url_from: "https://rival.com/a",
-          url_to: "https://example.com/",
-          is_lost: body.backlinks_status_type === "lost",
-        },
-      ],
-    });
-  };
-  while ((await jobs.runSeoStep(job.id, send)) === "more") {}
-  const report = await jobs.getSeoJob(p.id, p.id, job.id);
-  assert.equal(report?.status, "partial");
-  assert.equal(report?.parts?.length, 4);
-  assert.equal(
-    (report?.parts?.find((p) => p.key === "lost")?.data as any).items[0].lost,
-    true,
-  );
-  assert.ok(report?.parts?.find((p) => p.key === "domains")?.error);
-  assert.equal(calls, 4);
-  assert.equal(await jobs.runSeoStep(job.id, send), "done");
-  assert.equal(calls, 4);
-});
-test("competitor profiles request real organic datasets with the correct gap direction", async () => {
-  const p = await fixture("profile");
-  await seo.addCompetitor(p.id, p.id, "rival.com");
-  await assert.rejects(
-    () =>
-      jobs.enqueueSeo(p.id, p, "competitor", {
-        country: "United States",
-        competitor: "unknown.com",
-      }),
-    /watchlist/,
-  );
-  const a = await jobs.enqueueSeo(p.id, p, "competitor", {
-    country: "United States",
-    competitor: "rival.com",
+    return envelope(serp);
   });
-  let calls = 0,
-    gaps = 0;
-  const send = async (endpoint: string, body: Record<string, unknown>) => {
-    calls++;
-    assert.equal(body.location_code, 2840);
-    if (endpoint.includes("intersection")) {
-      assert.equal(body.target1, "rival.com");
-      assert.equal(body.target2, "example.com");
-      gaps++;
-    }
-    return envelope({ items: [], total_count: 0 });
-  };
-  while ((await jobs.runSeoStep(a.id, send)) === "more") {}
-  assert.equal(calls, 6);
-  assert.equal(gaps, 2);
-  assert.equal((await jobs.getSeoJob(p.id, p.id, a.id))?.status, "complete");
-  const d = await jobs.enqueueSeo(p.id, p, "discover", { country: "Canada" });
-  await jobs.runSeoStep(d.id, async (endpoint, body) => {
-    assert.ok(endpoint.includes("competitors_domain"));
-    assert.equal(body.location_code, 2124);
-    return envelope({ items: [], total_count: 0 });
-  });
+  assert.equal(calls, 0);
+  assert.equal((await jobs.getSeoJob(p.id, p.id, "old"))?.status, "failed");
+  assert.equal(await jobs.getSeoJob("other", p.id, "old"), null);
+  assert.equal((await seo.history(p.id, p.id, id)).length, 0);
 });
-test("scheduled ranks share manual admission, recheck configuration, and pause future runs", async () => {
+test("rank schedules explain unavailable collection without admitting provider work", async () => {
   const p = await fixture("schedule");
   await seo.saveKeyword(p.id, p.id, keyword);
-  const start = new Date("2026-10-20T08:00:00Z"),
-    due = new Date("2026-10-20T09:00:00Z");
-  const preferences = {
-    frequency: "daily",
-    timezone: "UTC",
-    hour: 9,
-    weekday: 1,
-    pageLimit: 10000,
-  };
-  await saveSchedule(p.id, p.id, "ranks", preferences, start);
-  process.env.DATAFORSEO_DAILY_REQUEST_LIMIT = "0";
-  assert.equal((await queueDueSchedules(due)).research.length, 0);
-  assert.match((await listSchedules(p.id, p.id))[0].error!, /activation/);
-  process.env.DATAFORSEO_DAILY_REQUEST_LIMIT = "500";
-  await saveSchedule(p.id, p.id, "ranks", preferences, start);
-  const runs = await Promise.all([
-    queueDueSchedules(due),
-    queueDueSchedules(due),
-  ]);
-  assert.equal(runs.flatMap((r) => r.research).length, 1);
   await saveSchedule(
     p.id,
     p.id,
     "ranks",
-    { ...preferences, frequency: "off" },
-    due,
+    {
+      frequency: "daily",
+      timezone: "UTC",
+      hour: 9,
+      weekday: 1,
+      pageLimit: 10000,
+    },
+    new Date("2026-10-20T08:00:00Z"),
   );
-  assert.equal((await listSchedules(p.id, p.id))[0].nextRunAt, null);
-  const id = runs.flatMap((r) => r.research)[0];
-  await jobs.runSeoStep(id, async () => envelope(serp));
-  assert.equal((await jobs.getSeoJob(p.id, p.id, id))?.status, "complete");
-  await saveSchedule(p.id, p.id, "ranks", preferences, start);
-  await queueDueSchedules(due);
-  assert.equal((await listSchedules(p.id, p.id))[0].status, "complete");
+  assert.equal(
+    (await queueDueSchedules(new Date("2026-10-20T09:00:00Z"))).research.length,
+    0,
+  );
+  assert.match(
+    (await listSchedules(p.id, p.id))[0].error!,
+    /Direct search-result collection/,
+  );
 });

@@ -59,7 +59,7 @@ export async function saveSchedule(
   return db.transaction(async () => {
     const p = await ownedProject(owner, project);
     if (!p) throw new Error("Website not found.");
-    // Preferences can be saved before subscription/provider activation. The worker
+    // Preferences can be saved before subscription/collector activation. The worker
     // checks current access again before doing any work.
     const next = nextOccurrence(values, now);
     await db
@@ -124,7 +124,8 @@ export async function queueDueSchedules(now = new Date()) {
       else if ((s.kind === "audit" || s.kind === "ranks") && !p.verified_at)
         reason = "Verify this website before its scheduled checks can run.";
       else if (s.kind === "ranks" && !researchReady())
-        reason = "The licensed search-data connection is awaiting activation.";
+        reason =
+          "Direct search-result collection is not active yet. Your schedule is saved but no rank check was run.";
       else if (
         s.kind === "ranks" &&
         !(await db
@@ -156,7 +157,7 @@ export async function queueDueSchedules(now = new Date()) {
               )
               .get(s.owner_id)
           ) {
-            reason = "Waiting for your current audit to finish.";
+            reason = "Waiting for your current crawl to finish.";
             retryAt = new Date(now.getTime() + 10 * 60000).toISOString();
           } else {
             // enqueue uses the same owner lock for scheduled and manual quotas.
@@ -165,7 +166,7 @@ export async function queueDueSchedules(now = new Date()) {
             } catch (error) {
               if (
                 !(error instanceof Error) ||
-                !error.message.includes("monthly audit allowance")
+                !error.message.includes("monthly crawl allowance")
               )
                 throw error;
               reason = error.message;

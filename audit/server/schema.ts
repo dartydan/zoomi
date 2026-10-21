@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REF
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS lease_token TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS lease_until BIGINT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS workflow_id TEXT;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS purpose TEXT NOT NULL DEFAULT 'audit';
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS target_url TEXT;
 CREATE INDEX IF NOT EXISTS jobs_owner_status ON jobs(owner_id,status);
 CREATE UNIQUE INDEX IF NOT EXISTS one_active_job ON jobs(project_id) WHERE status IN ('queued','running');
 CREATE TABLE IF NOT EXISTS audits(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,created_at TEXT NOT NULL,data TEXT NOT NULL);
@@ -41,4 +43,10 @@ CREATE TABLE IF NOT EXISTS seo_jobs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL
 CREATE UNIQUE INDEX IF NOT EXISTS one_active_seo_owner_job ON seo_jobs(owner_id) WHERE status IN ('queued','running');
 CREATE INDEX IF NOT EXISTS seo_jobs_history ON seo_jobs(owner_id,project_id,created_at DESC);
 CREATE INDEX IF NOT EXISTS seo_jobs_pending ON seo_jobs(updated_at) WHERE status IN ('queued','running');
+CREATE TABLE IF NOT EXISTS collection_sources(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,domain TEXT NOT NULL,url TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(project_id,domain));
+CREATE TABLE IF NOT EXISTS collected_pages(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,url TEXT NOT NULL,domain TEXT NOT NULL,title TEXT NOT NULL,description TEXT NOT NULL,headings TEXT NOT NULL,word_count INTEGER NOT NULL,status INTEGER NOT NULL,noindex BOOLEAN NOT NULL,links_truncated BOOLEAN NOT NULL,first_seen TEXT NOT NULL,last_seen TEXT NOT NULL,PRIMARY KEY(project_id,url));
+CREATE INDEX IF NOT EXISTS collected_pages_scope ON collected_pages(owner_id,project_id,domain);
+CREATE TABLE IF NOT EXISTS collected_links(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,source_url TEXT NOT NULL,target_url TEXT NOT NULL,source_domain TEXT NOT NULL,target_domain TEXT NOT NULL,anchor TEXT NOT NULL,rel TEXT NOT NULL,first_seen TEXT NOT NULL,last_seen TEXT NOT NULL,last_checked TEXT NOT NULL,present BOOLEAN NOT NULL,PRIMARY KEY(project_id,source_url,target_url));
+CREATE INDEX IF NOT EXISTS collected_links_target ON collected_links(owner_id,project_id,target_domain,present);
+CREATE TABLE IF NOT EXISTS crawl_host_leases(domain TEXT PRIMARY KEY,token TEXT NOT NULL,lease_until BIGINT NOT NULL);
 `;
