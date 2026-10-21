@@ -497,6 +497,150 @@ test("comparison evidence is paginated and cannot use reports from another websi
     404,
   );
 });
+test("research APIs keep keyword settings, history, competitors and reports private", async () => {
+  const basePath = `/api/projects/${project}`;
+  const saved = await request(
+    basePath + "/keywords",
+    "POST",
+    { keyword: "garden design", country: "United States", device: "desktop" },
+    alice,
+  );
+  assert.equal(saved.status, 201);
+  const keyword = saved.body[0].id;
+  assert.equal(
+    (await request(basePath + "/keywords", "GET", undefined, bob)).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        basePath + `/keywords/${keyword}`,
+        "PATCH",
+        { active: false },
+        bob,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        basePath + `/keywords/${keyword}/history`,
+        "GET",
+        undefined,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(
+        basePath + `/keywords/${keyword}`,
+        "PATCH",
+        { active: false },
+        alice,
+      )
+    ).body[0].active,
+    false,
+  );
+  assert.equal(
+    (
+      await request(
+        basePath + "/competitors",
+        "POST",
+        { domain: "rival.com" },
+        alice,
+      )
+    ).status,
+    201,
+  );
+  assert.equal(
+    (await request(basePath + "/competitors", "GET", undefined, bob)).status,
+    404,
+  );
+  const now = new Date().toISOString();
+  await database
+    .prepare(
+      "INSERT INTO seo_jobs(id,project_id,owner_id,kind,status,params,tasks,parts,period_key,total,done,created_at,updated_at) VALUES(?,?,?,'backlinks','complete',?,'[]',?,'private-report',1,1,?,?)",
+    )
+    .run(
+      "private-seo",
+      project,
+      owner,
+      JSON.stringify({ day: now.slice(0, 10) }),
+      JSON.stringify([
+        { key: "summary", label: "Backlinks", data: { backlinks: 12 } },
+      ]),
+      now,
+      now,
+    );
+  assert.equal(
+    (await request(basePath + "/seo/jobs/private-seo", "GET", undefined, alice))
+      .body.parts[0].data.backlinks,
+    12,
+  );
+  assert.equal(
+    (await request(basePath + "/seo/jobs/private-seo", "GET", undefined, bob))
+      .status,
+    404,
+  );
+  assert.equal(
+    (await request(basePath + "/seo/jobs/private-seo/cancel", "POST", {}, bob))
+      .status,
+    404,
+  );
+  const other = await database
+    .prepare("SELECT id FROM projects WHERE owner_id<>? LIMIT 1")
+    .get(owner);
+  assert.equal(
+    (
+      await request(
+        `/api/projects/${other.id}/seo/jobs/private-seo`,
+        "GET",
+        undefined,
+        bob,
+      )
+    ).status,
+    404,
+  );
+  const denied = await request(
+    `/api/projects/${other.id}/keywords/${keyword}/history`,
+    "GET",
+    undefined,
+    bob,
+  );
+  assert.equal(denied.status, 422);
+  assert.match(denied.body.error, /not found/);
+  await database
+    .prepare("UPDATE billing SET status='inactive' WHERE owner_id=?")
+    .run(owner);
+  const unpaid = await request(
+    basePath + "/seo/jobs",
+    "POST",
+    { kind: "backlinks" },
+    alice,
+  );
+  assert.equal(unpaid.status, 422);
+  assert.match(unpaid.body.error, /subscription/);
+  assert.equal(
+    (
+      await request(
+        basePath + "/seo/jobs?kind=unknown",
+        "GET",
+        undefined,
+        alice,
+      )
+    ).status,
+    422,
+  );
+  // Saved results remain readable when a subscription is inactive.
+  assert.equal(
+    (await request(basePath + "/seo/jobs/private-seo", "GET", undefined, alice))
+      .status,
+    200,
+  );
+});
 test("sign-out invalidates the customer session and password sign-in works", async () => {
   assert.equal(
     (await request("/api/auth/sign-out", "POST", {}, alice)).status,

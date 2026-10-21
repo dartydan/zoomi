@@ -24,4 +24,21 @@ CREATE INDEX IF NOT EXISTS schedules_due ON schedules(next_run_at) WHERE frequen
 CREATE TABLE IF NOT EXISTS automation_runs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,kind TEXT NOT NULL,due_at TEXT NOT NULL,status TEXT NOT NULL,error TEXT,lease_token TEXT,lease_until BIGINT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(project_id,kind,due_at));
 CREATE INDEX IF NOT EXISTS automation_pending ON automation_runs(status,updated_at);
 ALTER TABLE connections ADD COLUMN IF NOT EXISTS revision TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE provider_calls ADD COLUMN IF NOT EXISTS request_key TEXT;
+ALTER TABLE provider_calls ADD COLUMN IF NOT EXISTS request_hash TEXT;
+ALTER TABLE provider_calls ADD COLUMN IF NOT EXISTS endpoint TEXT;
+ALTER TABLE provider_calls ADD COLUMN IF NOT EXISTS response TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS provider_request_key ON provider_calls(request_key) WHERE request_key IS NOT NULL;
+CREATE INDEX IF NOT EXISTS provider_calls_owner_date ON provider_calls(owner_id,created_at);
+CREATE INDEX IF NOT EXISTS provider_calls_date ON provider_calls(created_at);
+CREATE TABLE IF NOT EXISTS tracked_keywords(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,keyword TEXT NOT NULL,keyword_key TEXT NOT NULL,country TEXT NOT NULL,device TEXT NOT NULL,active BOOLEAN NOT NULL DEFAULT true,created_at TEXT NOT NULL,UNIQUE(project_id,keyword_key,country,device));
+CREATE INDEX IF NOT EXISTS keywords_owner ON tracked_keywords(owner_id,project_id,active);
+CREATE TABLE IF NOT EXISTS rank_observations(id TEXT PRIMARY KEY,keyword_id TEXT NOT NULL REFERENCES tracked_keywords(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,day TEXT NOT NULL,checked_at TEXT NOT NULL,data TEXT NOT NULL,UNIQUE(keyword_id,day));
+CREATE INDEX IF NOT EXISTS ranks_keyword_date ON rank_observations(keyword_id,checked_at DESC);
+CREATE TABLE IF NOT EXISTS competitors(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,domain TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(project_id,domain));
+CREATE TABLE IF NOT EXISTS seo_jobs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,params TEXT NOT NULL,tasks TEXT NOT NULL,parts TEXT NOT NULL DEFAULT '[]',period_key TEXT NOT NULL UNIQUE,total INTEGER NOT NULL,done INTEGER NOT NULL DEFAULT 0,error TEXT,lease_token TEXT,lease_until BIGINT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_seo_owner_job ON seo_jobs(owner_id) WHERE status IN ('queued','running');
+CREATE INDEX IF NOT EXISTS seo_jobs_history ON seo_jobs(owner_id,project_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS seo_jobs_pending ON seo_jobs(updated_at) WHERE status IN ('queued','running');
 `;

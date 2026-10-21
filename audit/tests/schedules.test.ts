@@ -128,7 +128,7 @@ test("unpaid, unverified and disconnected websites wait without consuming an aud
     );
   }
   const result = await queueDueSchedules(due);
-  assert.deepEqual(result, { audits: [], refreshes: [] });
+  assert.deepEqual(result, { audits: [], refreshes: [], research: [] });
   for (const id of ["unpaid", "unverified", "disconnected"])
     assert.equal((await listSchedules(id, id))[0].status, "waiting");
 });

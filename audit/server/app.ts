@@ -10,6 +10,7 @@ import { verifySite } from "./verification.ts";
 import * as google from "./google.ts";
 import * as billing from "./billing.ts";
 import * as research from "./research.ts";
+import { seoRoutes } from "./seo-routes";
 import { listSchedules, saveSchedule } from "./schedules";
 import { compareAudits, type ChangeStatus } from "./comparison";
 import type { Audit } from "../src/types.ts";
@@ -87,7 +88,7 @@ app.use("/api", async (req, res, next) => {
 app.use("/api", async (req, res, next) => {
   const user = res.locals.user.id;
   const expensive =
-    /\/(sync|verify|keyword-gap|properties)$/.test(req.path) &&
+    /\/(sync|verify|keyword-gap|properties|seo\/jobs)$/.test(req.path) &&
     req.method !== "GET";
   const key = `${user}:${expensive ? "expensive" : /\/audits\/[^/]+$/.test(req.path) && req.method === "GET" ? "report" : "general"}`;
   const bucket = Math.floor(Date.now() / 60000);
@@ -209,6 +210,7 @@ app.use("/api/projects/:projectId", async (req, res, next) => {
   res.locals.project = p;
   next();
 });
+app.use("/api/projects/:projectId", seoRoutes);
 app.post("/api/projects/:projectId/verify", async (_req, res) => {
   const p = res.locals.project as ProjectRow;
   await verifySite(p);
@@ -222,7 +224,7 @@ app.get("/api/projects/:projectId/schedules", async (_req, res) =>
 );
 app.put("/api/projects/:projectId/schedules/:kind", async (req, res) => {
   const kind = String(req.params.kind);
-  if (kind !== "audit" && kind !== "google")
+  if (kind !== "audit" && kind !== "google" && kind !== "ranks")
     return res.status(400).json({ error: "Unknown schedule." });
   res.json(
     await saveSchedule(
@@ -469,11 +471,9 @@ app.delete("/api/projects/:projectId/connections/google", async (_req, res) => {
 });
 app.post("/api/projects/:projectId/connections/sync", async (_req, res) => {
   if (!(await billing.entitled(res.locals.user.id)))
-    return res
-      .status(402)
-      .json({
-        error: "An active subscription is required to refresh Google data.",
-      });
+    return res.status(402).json({
+      error: "An active subscription is required to refresh Google data.",
+    });
   res.json(await google.syncMetrics(res.locals.user.id, res.locals.project));
 });
 app.get("/api/projects/:projectId/metrics", async (_req, res) => {

@@ -15,12 +15,13 @@ export default async function recover(
   )
     return res.status(401).end();
   const { db } = await import("../../server/database");
-  const { dispatchJob, dispatchRefresh } =
+  const { dispatchJob, dispatchRefresh, dispatchSeo } =
     await import("../../server/dispatch");
   const { queueDueSchedules } = await import("../../server/schedules");
   const scheduled = await queueDueSchedules();
   for (const id of scheduled.audits) await dispatchJob(id);
   for (const id of scheduled.refreshes) await dispatchRefresh(id);
+  for (const id of scheduled.research) await dispatchSeo(id);
   const jobs = await db
     .prepare(
       "SELECT id FROM jobs WHERE status IN ('queued','running') AND updated_at<? AND (lease_until IS NULL OR lease_until<?) ORDER BY created_at LIMIT 25",
@@ -33,9 +34,19 @@ export default async function recover(
     )
     .all(new Date(Date.now() - 10 * 60000).toISOString(), Date.now());
   for (const r of refreshes) await dispatchRefresh(r.id);
+  const research = await db
+    .prepare(
+      "SELECT id FROM seo_jobs WHERE status IN ('queued','running') AND updated_at<? AND (lease_until IS NULL OR lease_until<?) ORDER BY created_at LIMIT 25",
+    )
+    .all(new Date(Date.now() - 10 * 60000).toISOString(), Date.now());
+  for (const r of research) await dispatchSeo(r.id);
   res.json({
+    research: research.length,
     checked: jobs.length,
     refreshes: refreshes.length,
-    scheduled: scheduled.audits.length + scheduled.refreshes.length,
+    scheduled:
+      scheduled.audits.length +
+      scheduled.refreshes.length +
+      scheduled.research.length,
   });
 }

@@ -31,3 +31,17 @@ export async function dispatchRefresh(id: string) {
       );
   }
 }
+
+export async function dispatchSeo(id: string) {
+  const { refreshSeo } = await import("../workflows/seo");
+  try {
+    await start(refreshSeo, [id]);
+  } catch {
+    await db
+      .prepare("UPDATE seo_jobs SET error=? WHERE id=? AND status='queued'")
+      .run(
+        "Your research is queued while the background service reconnects.",
+        id,
+      );
+  }
+}

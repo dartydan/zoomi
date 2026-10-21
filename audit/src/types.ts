@@ -1,9 +1,6 @@
 export type Severity = "high" | "medium" | "low";
 export type Category =
-  | "Search basics"
-  | "Content"
-  | "Accessibility"
-  | "Technical";
+  "Search basics" | "Content" | "Accessibility" | "Technical";
 export interface Finding {
   id: string;
   title: string;
@@ -49,13 +46,17 @@ export type Section =
   | "Action plan"
   | "Website audit"
   | "Content studio"
+  | "Rank tracking"
+  | "Backlinks"
   | "Competitors"
   | "Progress"
   | "Connections"
   | "Automation";
 
-export interface AuditSummary
-  extends Pick<Audit, "id" | "url" | "createdAt" | "score"> {
+export interface AuditSummary extends Pick<
+  Audit,
+  "id" | "url" | "createdAt" | "score"
+> {
   pageCount: number;
   findingCount: number;
 }

@@ -4,7 +4,9 @@ import { entitled } from "./billing";
 import { enqueue } from "./jobs";
 import { limits } from "./config";
 import { nextOccurrence, validRecurrence, type Recurrence } from "./recurrence";
-export type ScheduleKind = "audit" | "google";
+import { enqueueSeo } from "./seo-jobs";
+import { researchReady } from "./seo-provider";
+export type ScheduleKind = "audit" | "google" | "ranks";
 interface Schedule extends Recurrence {
   project_id: string;
   owner_id: string;
@@ -42,7 +44,8 @@ export async function saveSchedule(
   input: unknown,
   now = new Date(),
 ) {
-  if (!["audit", "google"].includes(kind)) throw new Error("Unknown schedule.");
+  if (!["audit", "google", "ranks"].includes(kind))
+    throw new Error("Unknown schedule.");
   const values = validRecurrence(input);
   const pageLimit = Number(
     (input as Record<string, unknown>).pageLimit ?? limits.pages,
@@ -92,10 +95,12 @@ export async function queueDueSchedules(now = new Date()) {
       "SELECT project_id,owner_id,kind FROM schedules WHERE frequency<>'off' AND next_run_at<=? ORDER BY next_run_at LIMIT 50",
     )
     .all(now.toISOString());
-  const result: { audits: string[]; refreshes: string[] } = {
-    audits: [],
-    refreshes: [],
-  };
+  const result: { audits: string[]; refreshes: string[]; research: string[] } =
+    {
+      audits: [],
+      refreshes: [],
+      research: [],
+    };
   for (const row of due) {
     const queued = await db.transaction(async () => {
       const s = (await db
@@ -116,8 +121,20 @@ export async function queueDueSchedules(now = new Date()) {
       if (!(await entitled(s.owner_id)))
         reason =
           "An active subscription is needed. We will check again tomorrow.";
-      else if (s.kind === "audit" && !p.verified_at)
-        reason = "Verify this website before its scheduled audit can run.";
+      else if ((s.kind === "audit" || s.kind === "ranks") && !p.verified_at)
+        reason = "Verify this website before its scheduled checks can run.";
+      else if (s.kind === "ranks" && !researchReady())
+        reason = "The licensed search-data connection is awaiting activation.";
+      else if (
+        s.kind === "ranks" &&
+        !(await db
+          .prepare(
+            "SELECT id FROM tracked_keywords WHERE project_id=? AND owner_id=? AND active=true",
+          )
+          .get(p.id, s.owner_id))
+      )
+        reason =
+          "Add at least one active keyword before scheduling rank checks.";
       else if (s.kind === "google") {
         const c = await db
           .prepare(
@@ -129,6 +146,7 @@ export async function queueDueSchedules(now = new Date()) {
             "Connect a Search Console or Analytics property to refresh its data.";
       }
       let id: string | undefined;
+      let queuedStatus = "queued";
       if (!reason) {
         if (s.kind === "audit") {
           if (
@@ -158,6 +176,21 @@ export async function queueDueSchedules(now = new Date()) {
                 ),
               )!;
             }
+          }
+        } else if (s.kind === "ranks") {
+          if (
+            await db
+              .prepare(
+                "SELECT id FROM seo_jobs WHERE owner_id=? AND status IN ('queued','running')",
+              )
+              .get(s.owner_id)
+          ) {
+            reason = "Waiting for your current search-data check to finish.";
+            retryAt = new Date(now.getTime() + 10 * 60000).toISOString();
+          } else {
+            const job = await enqueueSeo(s.owner_id, p, "ranks", {}, now);
+            id = job.id;
+            queuedStatus = job.status;
           }
         } else {
           const pending = await db
@@ -194,7 +227,7 @@ export async function queueDueSchedules(now = new Date()) {
         .run(
           reason ? retryAt : nextOccurrence(s, now),
           reason ? s.last_run_at : now.toISOString(),
-          reason ? "waiting" : "queued",
+          reason ? "waiting" : queuedStatus,
           reason || null,
           now.toISOString(),
           p.id,
@@ -203,9 +236,12 @@ export async function queueDueSchedules(now = new Date()) {
       return id ? { id, kind: s.kind } : undefined;
     }, `jobs:${row.owner_id}`)();
     if (queued)
-      (queued.kind === "audit" ? result.audits : result.refreshes).push(
-        queued.id,
-      );
+      (queued.kind === "audit"
+        ? result.audits
+        : queued.kind === "ranks"
+          ? result.research
+          : result.refreshes
+      ).push(queued.id);
   }
   return result;
 }

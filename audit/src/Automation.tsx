@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, LoaderCircle, Pause, RefreshCw } from "lucide-react";
 import { api, type Account, type Project } from "./api";
-type Kind = "audit" | "google";
+type Kind = "audit" | "google" | "ranks";
 interface Schedule {
   dirty?: boolean;
   kind: Kind;
@@ -63,7 +63,7 @@ export default function Automation({
       api<Run[]>(`${base}/automation-runs`),
     ]);
     setRows((current) =>
-      (["audit", "google"] as Kind[]).map((k) => {
+      (["audit", "google", "ranks"] as Kind[]).map((k) => {
         const saved = s.find((x) => x.kind === k) ?? defaults(k);
         const draft = current?.find((x) => x.kind === k);
         return preserveDrafts && draft
@@ -154,17 +154,25 @@ export default function Automation({
           {rows.map((s) => (
             <section className="card schedule-card" key={s.kind}>
               <span className="eyebrow">
-                {s.kind === "audit" ? "WEBSITE CHECKS" : "GOOGLE DATA"}
+                {s.kind === "audit"
+                  ? "WEBSITE CHECKS"
+                  : s.kind === "ranks"
+                    ? "KEYWORD POSITIONS"
+                    : "GOOGLE DATA"}
               </span>
               <h2>
                 {s.kind === "audit"
                   ? "Recurring website audit"
-                  : "Keep your data fresh"}
+                  : s.kind === "ranks"
+                    ? "Automatic rank tracking"
+                    : "Keep your data fresh"}
               </h2>
               <p>
                 {s.kind === "audit"
                   ? "Find new problems and confirm improvements without remembering to start another scan. Scheduled audits use your monthly allowance."
-                  : "Refresh the Search Console and Analytics properties you have connected. Google’s reporting delay still applies."}
+                  : s.kind === "ranks"
+                    ? "Check active keywords on a schedule. Each keyword uses one search-data request. Requires verified ownership, an active subscription and Zoomi’s licensed data connection. Results appear in Rank tracking."
+                    : "Refresh the Search Console and Analytics properties you have connected. Google’s reporting delay still applies."}
               </p>
               <label>
                 How often
@@ -265,7 +273,13 @@ export default function Automation({
                 ) : (
                   <Check size={16} />
                 )}
-                Save {s.kind === "audit" ? "audit" : "refresh"} schedule
+                Save{" "}
+                {s.kind === "audit"
+                  ? "audit"
+                  : s.kind === "ranks"
+                    ? "rank"
+                    : "refresh"}{" "}
+                schedule
               </button>
               <div className="schedule-status">
                 <strong>
@@ -290,7 +304,9 @@ export default function Automation({
         <p>
           Start times are approximate. An audit waits if another audit is
           running or your monthly allowance has been used. Pausing stops future
-          runs; cancel an audit already in progress from its progress panel.
+          runs; cancel a check already in progress from its progress panel. Rank
+          checks share the daily search-data allowance and reuse checks from the
+          same UTC day.
         </p>
       </div>
       <section className="card">

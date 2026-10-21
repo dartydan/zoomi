@@ -33,6 +33,8 @@ import type { Audit, AuditSummary, Finding, Section } from "./types";
 import { api, loadAudit, type Account, type Project, type Job } from "./api";
 import Connections, { type Metrics } from "./Connections";
 import Competitors from "./Competitors";
+import RankTracking from "./RankTracking";
+import Backlinks from "./Backlinks";
 import Automation from "./Automation";
 import AuditChanges from "./AuditChanges";
 
@@ -41,6 +43,8 @@ const sections: { name: Section; icon: typeof Search }[] = [
   { name: "Action plan", icon: ClipboardList },
   { name: "Website audit", icon: Globe2 },
   { name: "Content studio", icon: FileText },
+  { name: "Rank tracking", icon: BarChart3 },
+  { name: "Backlinks", icon: Link2 },
   { name: "Competitors", icon: Target },
   { name: "Progress", icon: TrendingUp },
   { name: "Automation", icon: CalendarClock },
@@ -568,13 +572,17 @@ export default function App({
                       ? "Get to know your website."
                       : section === "Content studio"
                         ? "Make something worth finding."
-                        : section === "Competitors"
-                          ? "A little perspective helps."
-                          : section === "Progress"
-                            ? "See how far you’ve come."
-                            : section === "Automation"
-                              ? "Keep your website moving."
-                              : "Bring the bigger picture together."}
+                        : section === "Rank tracking"
+                          ? "See where your website stands."
+                          : section === "Backlinks"
+                            ? "Follow the links to your website."
+                            : section === "Competitors"
+                              ? "A little perspective helps."
+                              : section === "Progress"
+                                ? "See how far you’ve come."
+                                : section === "Automation"
+                                  ? "Keep your website moving."
+                                  : "Bring the bigger picture together."}
               </h1>
               <p>
                 {section === "Overview"
@@ -585,19 +593,27 @@ export default function App({
                       ? "The details behind your score, explained without the guesswork."
                       : section === "Content studio"
                         ? "Turn your expertise into a clear plan for your next page."
-                        : section === "Competitors"
-                          ? "Find customer searches that competitors cover and your website could answer."
-                          : section === "Progress"
-                            ? "Every fresh audit is another checkpoint for your website."
-                            : section === "Automation"
-                              ? "Schedule audits and keep your connected data up to date."
-                              : "More context means better decisions for your business."}
+                        : section === "Rank tracking"
+                          ? "Follow the searches your customers use, one checkpoint at a time."
+                          : section === "Backlinks"
+                            ? "Understand who links to you and which links need a closer look."
+                            : section === "Competitors"
+                              ? "Find customer searches that competitors cover and your website could answer."
+                              : section === "Progress"
+                                ? "Every fresh audit is another checkpoint for your website."
+                                : section === "Automation"
+                                  ? "Schedule audits and keep your connected data up to date."
+                                  : "More context means better decisions for your business."}
               </p>
             </div>
-            <button className="button primary" onClick={openScan}>
-              <Plus size={17} />
-              Run new audit
-            </button>
+            {!["Rank tracking", "Backlinks", "Competitors"].includes(
+              section,
+            ) && (
+              <button className="button primary" onClick={openScan}>
+                <Plus size={17} />
+                Run new audit
+              </button>
+            )}
           </div>
           <div className="site-context">
             <div>
@@ -607,28 +623,36 @@ export default function App({
               <strong>{project.name}</strong>
               <span className="context-domain">{host(audit.url)}</span>
               <span className="pill neutral">
-                {hasAudit
-                  ? "Live scan"
-                  : project.verifiedAt
+                {["Rank tracking", "Backlinks", "Competitors"].includes(section)
+                  ? project.verifiedAt
                     ? "Verified website"
-                    : "Verification required"}
+                    : "Verification required"
+                  : hasAudit
+                    ? "Live scan"
+                    : project.verifiedAt
+                      ? "Verified website"
+                      : "Verification required"}
               </span>
             </div>
-            <span className="last-checked">
-              {loading || auditLoading ? (
-                <>
-                  <LoaderCircle className="spin" size={14} /> Loading saved
-                  audits
-                </>
-              ) : (
-                <>
-                  <span className="status-dot" />
-                  {hasAudit
-                    ? `Checked ${date(audit.createdAt)}`
-                    : "Ready for your first audit"}
-                </>
-              )}
-            </span>
+            {!["Rank tracking", "Backlinks", "Competitors"].includes(
+              section,
+            ) && (
+              <span className="last-checked">
+                {loading || auditLoading ? (
+                  <>
+                    <LoaderCircle className="spin" size={14} /> Loading saved
+                    audits
+                  </>
+                ) : (
+                  <>
+                    <span className="status-dot" />
+                    {hasAudit
+                      ? `Checked ${date(audit.createdAt)}`
+                      : "Ready for your first audit"}
+                  </>
+                )}
+              </span>
+            )}
           </div>
           {activeJob && (
             <div className="job-banner">
@@ -686,6 +710,8 @@ export default function App({
               "Connections",
               "Content studio",
               "Competitors",
+              "Rank tracking",
+              "Backlinks",
               "Automation",
             ].includes(section) && (
               <section className="card">
@@ -1204,6 +1230,8 @@ export default function App({
               </section>
             </div>
           )}
+          {section === "Rank tracking" && <RankTracking project={project} />}
+          {section === "Backlinks" && <Backlinks project={project} />}
           {section === "Competitors" && <Competitors project={project} />}
           {section === "Progress" && hasAudit && (
             <>
