@@ -49,4 +49,6 @@ CREATE INDEX IF NOT EXISTS collected_pages_scope ON collected_pages(owner_id,pro
 CREATE TABLE IF NOT EXISTS collected_links(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,owner_id TEXT NOT NULL,source_url TEXT NOT NULL,target_url TEXT NOT NULL,source_domain TEXT NOT NULL,target_domain TEXT NOT NULL,anchor TEXT NOT NULL,rel TEXT NOT NULL,first_seen TEXT NOT NULL,last_seen TEXT NOT NULL,last_checked TEXT NOT NULL,present BOOLEAN NOT NULL,PRIMARY KEY(project_id,source_url,target_url));
 CREATE INDEX IF NOT EXISTS collected_links_target ON collected_links(owner_id,project_id,target_domain,present);
 CREATE TABLE IF NOT EXISTS crawl_host_leases(domain TEXT PRIMARY KEY,token TEXT NOT NULL,lease_until BIGINT NOT NULL);
+CREATE TABLE IF NOT EXISTS search_positions(keyword_id TEXT NOT NULL REFERENCES tracked_keywords(id) ON DELETE CASCADE,project_id TEXT NOT NULL REFERENCES connections(project_id) ON DELETE CASCADE,owner_id TEXT NOT NULL,revision TEXT NOT NULL,day TEXT NOT NULL,position DOUBLE PRECISION,clicks INTEGER,impressions INTEGER,checked_at TEXT NOT NULL,PRIMARY KEY(keyword_id,day));
+CREATE INDEX IF NOT EXISTS search_positions_scope ON search_positions(owner_id,project_id,day DESC);
 `;

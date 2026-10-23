@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Check, LoaderCircle, Pause, RefreshCw } from "lucide-react";
 import { api, type Account, type Project } from "./api";
-type Kind = "audit" | "google" | "ranks";
-interface Schedule {
+type Kind = "audit" | "google" | "ranks" | "collection";
+export interface Schedule {
   dirty?: boolean;
   kind: Kind;
   frequency: "off" | "daily" | "weekly" | "monthly";
@@ -63,7 +63,7 @@ export default function Automation({
       api<Run[]>(`${base}/automation-runs`),
     ]);
     setRows((current) =>
-      (["audit", "google", "ranks"] as Kind[]).map((k) => {
+      (["audit", "google", "ranks", "collection"] as Kind[]).map((k) => {
         const saved = s.find((x) => x.kind === k) ?? defaults(k);
         const draft = current?.find((x) => x.kind === k);
         return preserveDrafts && draft
@@ -158,21 +158,27 @@ export default function Automation({
                   ? "WEBSITE CHECKS"
                   : s.kind === "ranks"
                     ? "KEYWORD POSITIONS"
-                    : "GOOGLE DATA"}
+                    : s.kind === "collection"
+                      ? "BACKLINKS & COMPETITORS"
+                      : "GOOGLE DATA"}
               </span>
               <h2>
                 {s.kind === "audit"
                   ? "Recurring website audit"
                   : s.kind === "ranks"
                     ? "Automatic rank tracking"
-                    : "Keep your data fresh"}
+                    : s.kind === "collection"
+                      ? "Monitor source websites"
+                      : "Keep your data fresh"}
               </h2>
               <p>
                 {s.kind === "audit"
                   ? "Find new problems and confirm improvements without remembering to start another scan. Scheduled audits use your monthly allowance."
                   : s.kind === "ranks"
-                    ? "Save your preferred ranking schedule. Checks remain inactive until Audit’s direct search-result collector is ready. Website audits already collect page and link evidence."
-                    : "Refresh the Search Console and Analytics properties you have connected. Google’s reporting delay still applies."}
+                    ? "Collect finalized daily average positions from your connected Search Console property. One refresh per day; Google’s reporting delay applies."
+                    : s.kind === "collection"
+                      ? "Revisit one saved backlink source or competitor each run, rotating by least recently attempted. Each run uses one crawl from the shared monthly allowance. Add sources in Backlinks or Competitors."
+                      : "Refresh the Search Console and Analytics properties you have connected. Google’s reporting delay still applies."}
               </p>
               <label>
                 How often
@@ -240,9 +246,9 @@ export default function Automation({
                       ))}
                     </select>
                   </label>
-                  {s.kind === "audit" && (
+                  {(s.kind === "audit" || s.kind === "collection") && (
                     <label>
-                      Pages per audit
+                      Pages per crawl
                       <input
                         type="number"
                         min={100}
@@ -278,7 +284,9 @@ export default function Automation({
                   ? "audit"
                   : s.kind === "ranks"
                     ? "rank"
-                    : "refresh"}{" "}
+                    : s.kind === "collection"
+                      ? "source"
+                      : "refresh"}{" "}
                 schedule
               </button>
               <div className="schedule-status">
@@ -305,8 +313,8 @@ export default function Automation({
           Start times are approximate. An audit waits if another audit is
           running or your monthly allowance has been used. Pausing stops future
           runs; cancel a check already in progress from its progress panel. Rank
-          checks share the daily search-data allowance and reuse checks from the
-          same UTC day.
+          refreshes reuse work from the same UTC day. Google reporting dates
+          follow Pacific time.
         </p>
       </div>
       <section className="card">

@@ -2,6 +2,10 @@
 
 The owner has chosen to make Audit the data collector. No third-party SEO aggregation or backlink-data service is used. The network transport and admission paths for licensed SEO requests have been removed. Old credentials cannot enable them. Historical reports, saved keywords and competitor watchlists remain readable; queued legacy research fails without contacting an aggregator.
 
+## Continuous monitoring
+
+Audit is an ongoing SEO monitoring platform. The default workspace summarizes tracked keywords, collected backlinks/pages, website health, upcoming schedules, attention items and actual collection activity. Audits are one monitoring input. In-app attention items flag average-position declines of at least three places, links missing on successful rechecks and failed work; email delivery is not implemented.
+
 ## Working collection path
 
 - Every new website audit also records page and outgoing-link evidence in Audit’s database.
@@ -16,15 +20,17 @@ The owner has chosen to make Audit the data collector. No third-party SEO aggreg
 
 ## Honest boundaries
 
-This is the first owned collection layer, not a finished global search index. Backlinks are observations within the pages visited, not total backlinks across the web. Crawling a customer’s own site cannot discover all pages that link to it. Customers can seed relevant directories, partners and known referring pages; broad discovery is future work.
+This is the first owned collection layer, not a finished global search index. Backlinks are observations within the pages visited, not total backlinks across the web. Crawling a customer’s own site cannot discover all pages that link to it. Customers can seed relevant directories, partners and known referring pages. Discovery suggestions group outgoing links from collected pages by outside domain, retaining a source page as provenance; suggestions are never counted as incoming backlinks. Saving one joins the project source list. Broad web-wide discovery is future work.
 
 Competitor pages show content evidence, not search rankings, keyword volumes, traffic estimates, difficulty or authority scores. HTML titles and headings are not relabeled as ranking keywords. The crawler does not execute JavaScript, does not crawl query-string pages, caps extraction at 500 distinct link destinations per page (with a truncation flag), and uses the existing 2 MB response limit. Old audits are not retroactively treated as complete link evidence; run a fresh crawl.
 
-Saved rank lists and schedule preferences remain available, but new rank checks are explicitly unavailable. The existing Google connection supplies customer-authorized Search Console average positions; those are not device/location-specific SERP observations. A reliable direct search-result collector, regional execution, parsing with blocked/empty-response detection and coverage-aware observations still need implementation and validation. Do not substitute fake positions or silently re-enable paid APIs.
+Rank monitoring now uses the owner's authorized Search Console property directly, without an SEO aggregation vendor. Daily refreshes collect 28 finalized reporting days ending three days ago, using Pacific reporting dates, case-insensitive exact keyword matching, a country filter and desktop/mobile device filters. Up to 50 active combinations are queued as resumable per-keyword tasks, with one job per project/connection revision/UTC day. Completed work is retained on failure; retries resume leased work safely, while a failed daily job can be attempted again the next day. New keywords added after today's job are included tomorrow. History retains the latest 90 reporting days per keyword when refreshed. Pausing stops inclusion in future jobs; it does not rewrite an already admitted job.
+
+Missing query rows stay unknown, never zero or "unranked". The screen calls positions averages and never blends them with legacy SERP snapshots. Rebinding/reconnecting clears the associated history; disconnect cascades removal. Current connection revision, subscription, verification, job lease and cancellation are checked before saving late responses. Google's [Search Analytics contract](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) specifies the filters, finalized data, reporting dates and row limitations. These country/device-filtered averages are not direct live SERP observations. A reliable direct search-result collector, regional execution, parsing with blocked/empty-response detection and coverage-aware observations still need implementation and validation. Do not substitute fake positions or silently re-enable paid APIs.
 
 ## Next collection stages
 
-1. Crawl-frontier expansion, deterministic recrawl schedules, crawl-event history, parser versions and a measured retention policy.
+1. Broader crawl-frontier expansion, link-event history, parser versions and measured page/link retention. Recurring source collection now rotates one saved outside website per run, least recently attempted first; blocked sources cannot starve others. Its schedule shares account concurrency and the monthly 30-crawl allowance with website health checks. A daily schedule with ten sources revisits each approximately every ten days, subject to access and quota.
 2. A separately governed public link graph with proven ownership/privacy separation, domain-wide scheduling, removal controls and scalable storage. Current tables are intentionally project-private.
 3. Direct search-result observations with explicit source, timestamp, engine, country/device and coverage. Confirm permitted collection before production operation; stop on challenges instead of reporting empty rankings. Google’s [published automated traffic policy](https://developers.google.com/search/docs/essentials/spam-policies#machine-generated-traffic) and [robots standard](https://www.rfc-editor.org/rfc/rfc9309.html) inform access handling.
 4. Derived competitor overlap, link opportunities and content comparisons based on measured coverage. Demand and traffic metrics require independent evidence.
@@ -37,4 +43,6 @@ Run the explicit migration before production deployment. Tests use injected HTML
 
 ## Validation of this change
 
-All 70 automated checks and the production Next.js/Workflow build pass. A live, isolated crawl of `https://zoomi.co/` completed and indexed three discovered pages and six link records; its temporary test database was removed afterward. This proves direct collection and storage on a small real site, not broad backlink coverage or 10,000-page capacity. Browser inspection of the updated screens was blocked by the desktop browser URL policy, so visual verification remains outstanding.
+An isolated local QA account completed a real crawl of `https://zoomi.co/`, collecting three pages. Automated tests cover direct Google request shape, missing-day semantics, daily deduplication, leases, disconnect/rebind/cancel fencing, saved keyword privacy, source discovery provenance and source rotation under quota. Live customer Google authorization and production scheduling still require credentials/deployment. No Vercel upgrade, paid data service or production activation is included in this change.
+
+Validation for this iteration: 78 automated checks pass, along with the production Next.js/Workflow build. Browser checks cover desktop and mobile monitoring layouts, keyword saving/history, real source crawl completion, collected-page evidence, schedule saving and pausing. A separate source crawl added one real page; no incoming backlinks were fabricated. The local QA account uses test-only entitlement/verification in the development database. Production credentials, billing and customer data were untouched.

@@ -79,7 +79,8 @@ export async function completeAuthorization(
       "DELETE FROM oauth_states WHERE state_hash=? AND owner_id=? AND session_id=? AND expires_at>? RETURNING *",
     )
     .get(hash(state), owner, session, Date.now())) as
-    { project_id: string; verifier: string } | undefined;
+    | { project_id: string; verifier: string }
+    | undefined;
   if (!row)
     throw new Error(
       "This connection request expired. Start again from your website’s Connections page.",
@@ -107,6 +108,9 @@ export async function completeAuthorization(
       );
     await db
       .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+      .run(row.project_id, owner);
+    await db
+      .prepare("DELETE FROM search_positions WHERE project_id=? AND owner_id=?")
       .run(row.project_id, owner);
   }, `connection:${row.project_id}`)();
   return row.project_id;
@@ -273,6 +277,9 @@ export async function bindProperties(
       );
     await db
       .prepare("DELETE FROM metrics WHERE project_id=? AND owner_id=?")
+      .run(p.id, owner);
+    await db
+      .prepare("DELETE FROM search_positions WHERE project_id=? AND owner_id=?")
       .run(p.id, owner);
     if (
       gsc &&

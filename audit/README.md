@@ -1,6 +1,6 @@
 # Audit by Zoomi — audit.zoomi.co
 
-A customer SaaS application for business owners: private accounts, verified website projects, background website audits, Google Search Console and Analytics connections, guided fixes, and subscription access.
+A continuous SEO monitoring SaaS for business owners: track search visibility, backlinks, competitor pages and website health, with private accounts, connected data, recurring checks, guided actions and subscription access.
 
 **Target: https://audit.zoomi.co.** The studio site at the repository root is separate. DNS currently points the Audit subdomain to `online.seranking.com`; this branch does not change that record.
 
@@ -14,7 +14,7 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. Next.js serves the interface and API on the same port; Workflow runs crawl batches. Create a private account, add a website, connect/verify it, then subscribe to run audits. The development interface does not substitute sample data or automatically grant paid access. Production email verification is required; local development does not send verification mail. Password recovery requires email delivery configuration in either environment.
+Open http://127.0.0.1:5173. Next.js serves the interface and API on the same port; Workflow runs crawl batches. Create a private account, add a website, connect/verify it, then subscribe and configure recurring monitoring. The development interface does not substitute sample data or automatically grant paid access. Production email verification is required; local development does not send verification mail. Password recovery requires email delivery configuration in either environment.
 
 Copy values from `.env.example` into the deployment platform's secret store. A local `.env` is also supported and is ignored by Git. For development, set `APP_URL=http://127.0.0.1:5173`, omit `NODE_ENV=production`, and use a writable local `AUDIT_DATA_DIR`. Do not use production credentials for local tests.
 
@@ -31,17 +31,18 @@ npm start       # serve the built application; set APP_URL for the actual addres
 - Website ownership through Google Search Console owner/full access, a website meta tag, or DNS TXT.
 - PostgreSQL storage, atomic quotas and billing reconciliation, indexed owner queries, and fenced worker leases.
 - Durable Vercel Workflow jobs with progress, cancellation, bounded batches, checkpoints, duplicate-run coordination, and cron dispatch recovery.
-- Daily, weekly, and monthly audit/Google refresh/rank-check schedules with customer timezones, daylight-saving handling, pause controls, and activity history. Scheduled audits share the normal concurrency and monthly quotas.
+- Daily, weekly, and monthly website, Google, keyword-position and source-collection schedules with customer timezones, daylight-saving handling, pause controls, and activity history. Scheduled audits share the normal concurrency and monthly quotas.
 - Sitemap and internal-link discovery, robots policy checks, crawl delays, up to 10,000 pages per job, and explicit partial coverage.
 - Ten evidence-backed audit issue groups and a weighted foundational score. Marking a task done never changes the measured score.
 - Page-level comparisons between consecutive scans: verified fixes, new findings, persistent issues, and issues that could not be rechecked. Different rulesets do not produce misleading comparisons.
 - Google OAuth with PKCE, expiring one-use session-bound state, encrypted refresh tokens, read-only scopes, property selection, and disconnect/revocation.
 - Search Console clicks, impressions, queries, page data, and average positions. Analytics visitors, sessions, key events, and pageviews. Refresh manually or on a saved schedule. Disconnecting or changing properties prevents an older refresh from restoring stale data.
-- Keyword watchlists and private historical rank reports. New rank measurements remain unavailable until Zoomi’s direct search-result collector exists.
+- Keyword watchlists with daily Google Search Console average-position history, filtered by country/device. Finalized reporting days remain separate from historical SERP snapshots.
 - Zoomi-owned page/link collection from saved competitors and source websites, using the same durable crawler as audits.
 - Incoming-link observations with anchors, rel attributes, first/last seen dates, evidence-based missing-link checks, pagination and CSV exports.
 - Competitor page titles, headings, word counts, HTTP status and collection timestamps; no invented traffic, volume or rankings. [Collection coverage and roadmap](docs/SEARCH-DATA.md).
 - Stripe subscription Checkout, customer portal, signature-verified lifecycle webhooks, replay protection, and server-enforced entitlements. No free trial is configured.
+- Monitoring overview with upcoming checks, observed changes and collection activity. Discovery suggestions from collected outgoing links; recurring source rotation respects the shared crawl allowance.
 - Responsive account, project, connection, audit, action, content-template, ranking, backlink, competitor, comparison, and history screens. Exportable Markdown plans and reports.
 
 ## Activation still required

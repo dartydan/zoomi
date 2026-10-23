@@ -255,8 +255,8 @@ export default function SaaSApp() {
                 </h2>
                 <p>
                   Up to {account?.limits.pages.toLocaleString() ?? "10,000"}{" "}
-                  pages per audit · {account?.limits.projects ?? 5} websites ·{" "}
-                  {account?.limits.crawlsPerMonth ?? 30} audits per month
+                  pages per crawl · {account?.limits.projects ?? 5} websites ·{" "}
+                  {account?.limits.crawlsPerMonth ?? 30} crawls per month
                 </p>
                 {!account?.billingConfigured && (
                   <small>
@@ -353,7 +353,7 @@ export default function SaaSApp() {
                     <h3>Your website belongs here.</h3>
                     <p>
                       Start by adding your website. We’ll help you connect
-                      Google data and verify ownership before your first audit.
+                      Google data and verify ownership before monitoring begins.
                     </p>
                     <button
                       className="button primary"

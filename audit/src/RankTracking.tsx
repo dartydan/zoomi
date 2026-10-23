@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, TrendingUp } from "lucide-react";
+import { Plus } from "lucide-react";
 import { api, type Project } from "./api";
 import {
   searchCountries,
   type TrackedKeyword,
   type RankObservation,
+  type SearchPosition,
   type Device,
 } from "./seo-types";
 import {
@@ -17,6 +18,7 @@ import {
   WebLink,
   CsvButton,
 } from "./seo-ui";
+
 export default function RankTracking({ project }: { project: Project }) {
   const state = useResearch(project, "ranks");
   const [keywords, setKeywords] = useState<TrackedKeyword[]>([]);
@@ -25,84 +27,63 @@ export default function RankTracking({ project }: { project: Project }) {
   const [device, setDevice] = useState<Device>("desktop");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<TrackedKeyword>();
-  const [history, setHistory] = useState<RankObservation[]>([]);
+  const [history, setHistory] = useState<SearchPosition[]>([]);
+  const [legacy, setLegacy] = useState<RankObservation[]>([]);
   const [filter, setFilter] = useState("");
   const [notice, setNotice] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  async function load() {
-    const rows = await api<TrackedKeyword[]>(state.base + "/keywords");
-    setKeywords(rows);
-    setLoaded(true);
-  }
+  const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
   useEffect(() => {
-    void load().catch((e) => state.setError(e.message));
+    const abort = new AbortController();
+    void api<TrackedKeyword[]>(state.base + "/keywords", {
+      signal: abort.signal,
+    })
+      .then(setKeywords)
+      .catch((e) => {
+        if (!abort.signal.aborted) state.setError(e.message);
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setLoading(false);
+      });
+    return () => abort.abort();
   }, [state.base, state.job?.updatedAt]);
   useEffect(() => {
     setHistory([]);
+    setLegacy([]);
     if (!selected) return;
-    let mounted = true;
-    void api<RankObservation[]>(`${state.base}/keywords/${selected.id}/history`)
-      .then((r) => {
-        if (mounted) setHistory(r);
+    const abort = new AbortController();
+    setHistoryLoading(true);
+    void Promise.all([
+      api<SearchPosition[]>(`${state.base}/keywords/${selected.id}/positions`, {
+        signal: abort.signal,
+      }),
+      api<RankObservation[]>(`${state.base}/keywords/${selected.id}/history`, {
+        signal: abort.signal,
+      }),
+    ])
+      .then(([positions, snapshots]) => {
+        if (!abort.signal.aborted) {
+          setHistory(positions);
+          setLegacy(snapshots);
+        }
       })
       .catch((e) => {
-        if (mounted) state.setError(e.message);
+        if (!abort.signal.aborted) state.setError(e.message);
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setHistoryLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
+    return () => abort.abort();
   }, [state.base, selected?.id, state.job?.updatedAt]);
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
+  async function act(work: () => Promise<TrackedKeyword[]>, message: string) {
     setBusy(true);
     state.setError("");
     setNotice("");
     try {
-      setKeywords(
-        await api(state.base + "/keywords", {
-          method: "POST",
-          body: JSON.stringify({ keyword, country, device }),
-        }),
-      );
-      setKeyword("");
-      setNotice(
-        "Keyword saved. Measurements will begin when Audit’s direct search-result collector is ready.",
-      );
+      setKeywords(await work());
+      setNotice(message);
     } catch (e) {
-      state.setError(
-        e instanceof Error ? e.message : "Could not save keyword.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function change(k: TrackedKeyword, remove = false) {
-    if (
-      remove &&
-      !window.confirm(`Remove “${k.keyword}” and its saved ranking history?`)
-    )
-      return;
-    setBusy(true);
-    state.setError("");
-    try {
-      setKeywords(
-        await api(`${state.base}/keywords/${k.id}`, {
-          method: remove ? "DELETE" : "PATCH",
-          ...(!remove ? { body: JSON.stringify({ active: !k.active }) } : {}),
-        }),
-      );
-      if (remove && selected?.id === k.id) setSelected(undefined);
-      setNotice(
-        remove
-          ? "Keyword and history removed."
-          : k.active
-            ? "Keyword paused. Its history is retained."
-            : "Keyword resumed for future checks.",
-      );
-    } catch (e) {
-      state.setError(
-        e instanceof Error ? e.message : "Could not update keyword.",
-      );
+      state.setError((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -110,38 +91,59 @@ export default function RankTracking({ project }: { project: Project }) {
   const rows = keywords.filter((k) =>
     k.keyword.toLowerCase().includes(filter.toLowerCase()),
   );
-  const ranked = keywords.filter(
-    (k) =>
-      k.active &&
-      k.latest?.position !== null &&
-      k.latest?.position !== undefined,
+  const measured = keywords.filter(
+    (k) => k.active && k.positions[0]?.position != null,
   );
-  const top10 = ranked.filter((k) => k.latest!.position! <= 10).length;
-  const changeText = (k: TrackedKeyword) => {
-    const a = k.latest?.position,
-      b = k.previous?.position;
-    if (a == null || b == null) return "—";
-    const d = b - a;
-    return d > 0 ? `↑ ${d}` : d < 0 ? `↓ ${Math.abs(d)}` : "No change";
+  const change = (k: TrackedKeyword) => {
+    const [a, b] = k.positions;
+    if (a?.position == null || b?.position == null) return "—";
+    const delta = b.position - a.position;
+    return delta > 0
+      ? `↑ ${metric(delta)}`
+      : delta < 0
+        ? `↓ ${metric(-delta)}`
+        : "No change";
   };
   return (
     <div className="seo-page">
       <section className="card">
         <div className="section-head">
           <div>
-            <h2>The searches that matter to you</h2>
+            <h2>Monitor the searches that matter</h2>
             <p>
-              Track up to 50 keyword, country and device combinations. Google
-              organic results, including your website’s subdomains.
+              Daily average positions from your connected Google Search Console
+              property, by country and device.
             </p>
           </div>
           <RefreshResearch
             state={state}
             project={project}
-            label="Check active keywords"
+            label="Refresh positions"
           />
         </div>
-        <form className="seo-keyword-form" onSubmit={add}>
+        <div className="configuration-note">
+          These are average positions across actual search impressions, not a
+          live search-result snapshot. Google can omit low-volume queries and
+          days with no reported data. A blank position does not mean your
+          website is unranked.
+        </div>
+        <form
+          className="seo-keyword-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void act(async () => {
+              const result = await api<TrackedKeyword[]>(
+                state.base + "/keywords",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ keyword, country, device }),
+                },
+              );
+              setKeyword("");
+              return result;
+            }, "Keyword saved for the next daily refresh. Enable recurring rank tracking in Automation.");
+          }}
+        >
           <label>
             Keyword
             <input
@@ -189,17 +191,15 @@ export default function RankTracking({ project }: { project: Project }) {
             <strong>{keywords.filter((k) => k.active).length} / 50</strong>
           </div>
           <div>
-            <span>With saved checks</span>
-            <strong>
-              {keywords.filter((k) => k.active && k.latest).length}
-            </strong>
+            <span>Latest day has a position</span>
+            <strong>{measured.length}</strong>
           </div>
           <div>
-            <span>Latest positions in top 10</span>
+            <span>Latest average position ≤ 10</span>
             <strong>
-              {keywords.some((k) => k.active && k.latest)
-                ? top10
-                : "Not checked"}
+              {measured.length
+                ? measured.filter((k) => k.positions[0].position! <= 10).length
+                : "No data"}
             </strong>
           </div>
         </div>
@@ -208,105 +208,119 @@ export default function RankTracking({ project }: { project: Project }) {
             Find a tracked keyword
             <input
               type="search"
+              placeholder="Search your keywords"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="Search your keywords"
             />
           </label>
           <CsvButton
-            name="audit-keyword-ranks.csv"
+            name="audit-position-monitoring.csv"
             rows={[
               [
                 "Keyword",
                 "Country",
                 "Device",
-                "Active",
-                "Position",
-                "Previous position",
-                "Checked at",
-                "URL",
-                "Organic results returned",
+                "Reporting day (Pacific)",
+                "Average position",
+                "Previous day average",
+                "Clicks",
+                "Impressions",
+                "Source",
               ],
               ...rows.map((k) => [
                 k.keyword,
                 k.country,
                 k.device,
-                k.active,
-                k.latest?.position,
-                k.previous?.position,
-                k.latest?.checkedAt,
-                k.latest?.url,
-                k.latest?.organicResults,
+                k.positions[0]?.day,
+                k.positions[0]?.position,
+                k.positions[1]?.position,
+                k.positions[0]?.clicks,
+                k.positions[0]?.impressions,
+                "Google Search Console",
               ]),
             ]}
           />
         </div>
-        <ResultTable
-          rows={rows}
-          headers={[
-            "Keyword",
-            "Country / device",
-            "Position",
-            "Movement",
-            "Checked",
-            "Manage",
-          ]}
-          empty={
-            loaded
-              ? keywords.length
-                ? "No keywords match your search."
-                : "Add your first keyword to start building a ranking history."
-              : "Loading your keywords…"
-          }
-          render={(k) => (
-            <tr key={k.id}>
-              <td>
-                <button className="text-button" onClick={() => setSelected(k)}>
-                  {k.keyword}
-                </button>
-                {!k.active && <small>Paused</small>}
-              </td>
-              <td>
-                {k.country}
-                <small>{k.device} · English</small>
-              </td>
-              <td>
-                {k.latest ? (k.latest.position ?? "Not found") : "Not checked"}
-                {k.latest && (
-                  <small>
-                    {k.latest.organicResults} organic results returned
-                  </small>
-                )}
-              </td>
-              <td>{changeText(k)}</td>
-              <td>{k.latest ? dateTime(k.latest.checkedAt) : "—"}</td>
-              <td>
-                <div className="seo-inline">
+        {loading ? (
+          <p role="status">Loading your keywords…</p>
+        ) : (
+          <ResultTable
+            rows={rows}
+            headers={[
+              "Keyword",
+              "Country / device",
+              "Average position",
+              "Daily change",
+              "Reporting day",
+              "Actions",
+            ]}
+            render={(k) => (
+              <tr key={k.id}>
+                <td>
+                  <button
+                    className="text-button"
+                    onClick={() => setSelected(k)}
+                  >
+                    {k.keyword}
+                  </button>
+                  <small>{k.active ? "Tracking enabled" : "Paused"}</small>
+                </td>
+                <td>
+                  {k.country}
+                  <small>{k.device}</small>
+                </td>
+                <td>
+                  {k.positions[0]?.position != null
+                    ? metric(k.positions[0].position)
+                    : "Not reported"}
+                </td>
+                <td>{change(k)}</td>
+                <td>{k.positions[0]?.day ?? "Awaiting refresh"}</td>
+                <td>
                   <button
                     className="text-button"
                     disabled={busy}
-                    onClick={() => void change(k)}
+                    onClick={() =>
+                      void act(
+                        () =>
+                          api(`${state.base}/keywords/${k.id}`, {
+                            method: "PATCH",
+                            body: JSON.stringify({ active: !k.active }),
+                          }),
+                        k.active
+                          ? "Keyword paused. History is retained."
+                          : "Keyword resumed.",
+                      )
+                    }
                   >
                     {k.active ? "Pause" : "Resume"}
                   </button>
                   <button
                     className="text-button"
                     disabled={busy}
-                    onClick={() => void change(k, true)}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Remove “${k.keyword}” and its saved history?`,
+                        )
+                      )
+                        void act(async () => {
+                          const result = await api<TrackedKeyword[]>(
+                            `${state.base}/keywords/${k.id}`,
+                            { method: "DELETE" },
+                          );
+                          if (selected?.id === k.id) setSelected(undefined);
+                          return result;
+                        }, "Keyword removed.");
+                    }}
                   >
                     Remove
                   </button>
-                </div>
-              </td>
-            </tr>
-          )}
-        />
-        <p className="seo-caption">
-          English searches. Results vary by location, device and time. “Not
-          found” means absent from the returned organic results; it does not
-          imply a position beyond 100. Refreshes reuse that day’s saved checks
-          (UTC). Movement compares the two most recent successful checks.
-        </p>
+                </td>
+              </tr>
+            )}
+          />
+        )}
       </section>
       {selected && (
         <section className="card">
@@ -314,104 +328,81 @@ export default function RankTracking({ project }: { project: Project }) {
             <div>
               <h2>{selected.keyword}</h2>
               <p>
-                {selected.country} · {selected.device} · Up to 90 saved checks
+                {selected.country} · {selected.device} · Last 90 reporting days
+                available
               </p>
             </div>
-            <TrendingUp size={25} />
-          </div>
-          {history.length > 1 && (
-            <div
-              className="rank-timeline"
-              aria-label="Ranking history; lower position is better"
+            <button
+              className="text-button"
+              onClick={() => setSelected(undefined)}
             >
-              {[...history]
-                .reverse()
-                .slice(-20)
-                .map((r) => (
-                  <div
-                    key={r.id}
-                    title={`${r.day}: ${r.position ?? "Not found"}`}
-                  >
-                    <strong>{r.position ?? "—"}</strong>
-                    <div className="rank-track">
-                      <span
-                        style={{
-                          height: r.position
-                            ? `${Math.max(4, 100 - Math.min(100, r.position))}%`
-                            : "0%",
-                        }}
-                      />
-                    </div>
-                    <small>{r.day.slice(5)}</small>
-                  </div>
-                ))}
-            </div>
+              Close history
+            </button>
+          </div>
+          <p className="seo-caption">
+            Reporting dates follow Google’s Pacific time zone. Positions are
+            averages for the connected property. Lower is better; missing days
+            stay unknown.
+          </p>
+          {historyLoading ? (
+            <p role="status">Loading position history…</p>
+          ) : (
+            <ResultTable
+              rows={history}
+              headers={[
+                "Reporting day",
+                "Average position",
+                "Clicks",
+                "Impressions",
+                "Collected",
+              ]}
+              render={(r) => (
+                <tr key={r.day}>
+                  <td>{r.day}</td>
+                  <td>
+                    {r.position == null ? "Not reported" : metric(r.position)}
+                  </td>
+                  <td>{metric(r.clicks)}</td>
+                  <td>{metric(r.impressions)}</td>
+                  <td>{dateTime(r.checkedAt)}</td>
+                </tr>
+              )}
+            />
           )}
-          <ResultTable
-            rows={history}
-            headers={["Checked", "Position", "Your page", "Coverage"]}
-            empty="Your first successful check will appear here."
-            render={(r) => (
-              <tr key={r.id}>
-                <td>{dateTime(r.checkedAt)}</td>
-                <td>{r.position ?? "Not found"}</td>
-                <td>
-                  <WebLink url={r.url} />
-                </td>
-                <td>
-                  {r.organicResults} organic results
-                  <small>
-                    Deepest returned position:{" "}
-                    {r.deepestPosition || "Unavailable"}
-                  </small>
-                </td>
-              </tr>
-            )}
-          />
-          {history[0]?.competitors.length > 0 && (
-            <>
-              <h3>Competitors in the latest check</h3>
+          {!!legacy.length && (
+            <details>
+              <summary>Earlier search-result snapshots</summary>
+              <p>
+                Historical snapshots use a different measurement and are kept
+                separate from average positions.
+              </p>
               <ResultTable
-                rows={history[0].competitors}
-                headers={["Competitor", "Position", "Ranking page"]}
-                render={(c) => (
-                  <tr key={c.domain}>
-                    <td>{c.domain}</td>
-                    <td>{c.position ?? "Not found"}</td>
-                    <td>
-                      <WebLink url={c.url} />
-                    </td>
-                  </tr>
-                )}
-              />
-            </>
-          )}
-          {history[0]?.leadingResults.length > 0 && (
-            <>
-              <h3>Leading organic results</h3>
-              <ResultTable
-                rows={history[0].leadingResults}
-                headers={["Position", "Page"]}
+                rows={legacy}
+                headers={[
+                  "Day",
+                  "Snapshot position",
+                  "Page",
+                  "Competitor positions",
+                ]}
                 render={(r) => (
-                  <tr key={r.position + "-" + r.url}>
-                    <td>{r.position}</td>
+                  <tr key={r.id}>
+                    <td>{r.day}</td>
+                    <td>{metric(r.position)}</td>
                     <td>
-                      <WebLink url={r.url}>{r.title || r.url}</WebLink>
+                      <WebLink url={r.url} />
+                    </td>
+                    <td>
+                      {r.competitors
+                        .map((c) => `${c.domain}: ${metric(c.position)}`)
+                        .join(" · ")}
                     </td>
                   </tr>
                 )}
               />
-            </>
+            </details>
           )}
         </section>
       )}
-      <div className="scope-note">
-        <p>
-          Set automatic checks in Automation. Pausing a keyword stops future
-          checks; its history stays here. A check already in progress uses the
-          keyword list it started with.
-        </p>
-      </div>
     </div>
   );
 }

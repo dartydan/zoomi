@@ -36,6 +36,7 @@ import Competitors from "./Competitors";
 import RankTracking from "./RankTracking";
 import Backlinks from "./Backlinks";
 import Automation from "./Automation";
+import Monitoring from "./Monitoring";
 import AuditChanges from "./AuditChanges";
 
 const sections: { name: Section; icon: typeof Search }[] = [
@@ -445,24 +446,41 @@ export default function App({
           <span className="site-avatar">
             <Globe2 size={17} />
           </span>
-          <select
-            aria-label="Choose website audit"
-            value={selected}
-            onChange={(e) => {
-              setSelected(e.target.value);
-              setDetail(null);
-            }}
-          >
-            <option value="" disabled>
-              Choose an audit
-            </option>
-            {audits.map((a) => (
-              <option key={a.id} value={a.id}>
-                {host(a.url)} · {date(a.createdAt)}
-              </option>
-            ))}
-          </select>
-          <ChevronDown size={14} />
+          {[
+            "Website audit",
+            "Action plan",
+            "Progress",
+            "Content studio",
+          ].includes(section) ? (
+            <>
+              <select
+                aria-label="Choose website audit"
+                value={selected}
+                onChange={(e) => {
+                  setSelected(e.target.value);
+                  setDetail(null);
+                }}
+              >
+                <option value="" disabled>
+                  Choose an audit
+                </option>
+                {audits.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {host(a.url)} · {date(a.createdAt)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} />
+            </>
+          ) : (
+            <button
+              className="text-button"
+              aria-label={`Switch website: ${host(project.url)}`}
+              onClick={onProjects}
+            >
+              {host(project.url)} <ChevronDown size={14} />
+            </button>
+          )}
         </label>
         <nav aria-label="Main navigation">
           {sections.map(({ name, icon: Icon }) => (
@@ -511,7 +529,11 @@ export default function App({
           </button>
           <div className="profile">
             <span className="avatar">Z</span>
-            <button className="text-button" onClick={onProjects}>
+            <button
+              className="text-button"
+              aria-label="All websites and billing"
+              onClick={onProjects}
+            >
               {account.user.name}
               <small>All websites & billing</small>
             </button>
@@ -542,7 +564,7 @@ export default function App({
               aria-label="What’s included"
               onClick={() =>
                 setInfo(
-                  "Audit combines website crawls with your authorized Google Search Console and Analytics data. You can run audits, track fixes, compare checkpoints, and plan content. Manage your websites and subscription from your account.",
+                  "Audit continuously monitors search visibility, website health, backlinks and competitor pages. Connect Google, choose your keywords and sources, and set recurring checks. Manage your websites and subscription from your account.",
                 )
               }
             >
@@ -565,7 +587,7 @@ export default function App({
               <div className="eyebrow">YOUR WEBSITE, MOVING FORWARD</div>
               <h1>
                 {section === "Overview"
-                  ? "Your next move, made clear."
+                  ? "Your website, continuously monitored."
                   : section === "Action plan"
                     ? "A little progress goes a long way."
                     : section === "Website audit"
@@ -586,7 +608,7 @@ export default function App({
               </h1>
               <p>
                 {section === "Overview"
-                  ? "Understand what’s working. Know what to work on next."
+                  ? "Track performance, spot changes, and know what needs attention."
                   : section === "Action plan"
                     ? "Practical improvements, in an order that makes sense."
                     : section === "Website audit"
@@ -598,20 +620,24 @@ export default function App({
                           : section === "Backlinks"
                             ? "Understand who links to you and which links need a closer look."
                             : section === "Competitors"
-                              ? "Find customer searches that competitors cover and your website could answer."
+                              ? "Monitor competitor pages and compare the content we collect."
                               : section === "Progress"
                                 ? "Every fresh audit is another checkpoint for your website."
                                 : section === "Automation"
-                                  ? "Schedule audits and keep your connected data up to date."
+                                  ? "Set recurring checks for rankings, backlinks, competitors and website health."
                                   : "More context means better decisions for your business."}
               </p>
             </div>
-            {!["Rank tracking", "Backlinks", "Competitors"].includes(
-              section,
-            ) && (
+            {![
+              "Overview",
+              "Automation",
+              "Rank tracking",
+              "Backlinks",
+              "Competitors",
+            ].includes(section) && (
               <button className="button primary" onClick={openScan}>
                 <Plus size={17} />
-                Run new audit
+                Run website check
               </button>
             )}
           </div>
@@ -623,7 +649,13 @@ export default function App({
               <strong>{project.name}</strong>
               <span className="context-domain">{host(audit.url)}</span>
               <span className="pill neutral">
-                {["Rank tracking", "Backlinks", "Competitors"].includes(section)
+                {[
+                  "Overview",
+                  "Automation",
+                  "Rank tracking",
+                  "Backlinks",
+                  "Competitors",
+                ].includes(section)
                   ? project.verifiedAt
                     ? "Verified website"
                     : "Verification required"
@@ -634,9 +666,13 @@ export default function App({
                       : "Verification required"}
               </span>
             </div>
-            {!["Rank tracking", "Backlinks", "Competitors"].includes(
-              section,
-            ) && (
+            {![
+              "Overview",
+              "Automation",
+              "Rank tracking",
+              "Backlinks",
+              "Competitors",
+            ].includes(section) && (
               <span className="last-checked">
                 {loading || auditLoading ? (
                   <>
@@ -707,6 +743,7 @@ export default function App({
             !auditLoading &&
             !loading &&
             ![
+              "Overview",
               "Connections",
               "Content studio",
               "Competitors",
@@ -745,205 +782,13 @@ export default function App({
                 />
               </section>
             )}
-          {section === "Overview" && hasAudit && (
-            <>
-              <div className="overview-grid">
-                <section className="health-card">
-                  <div className="card-kicker">
-                    <ShieldCheck size={17} /> WEBSITE HEALTH{" "}
-                    <button
-                      className="icon-button"
-                      aria-label="About health score"
-                      onClick={() =>
-                        setInfo(
-                          "The health score starts at 100 and subtracts weighted findings across the pages we checked. It measures foundational website checks, not Google rankings, traffic, conversions, or full accessibility. Skipped pages are excluded.",
-                        )
-                      }
-                    >
-                      <CircleHelp size={16} />
-                    </button>
-                  </div>
-                  <div className="health-body">
-                    <Score value={audit.score} />
-                    <div>
-                      <span className="pill sage">
-                        {audit.score >= 90
-                          ? "A strong foundation"
-                          : audit.score >= 70
-                            ? "Room to grow"
-                            : "Let’s build a better foundation"}
-                      </span>
-                      <h2>
-                        {audit.score >= 90
-                          ? "Good things to build on."
-                          : "Good things are taking shape."}
-                      </h2>
-                      <p>
-                        {remaining.length
-                          ? `${remaining.length} improvements to help your website put its best foot forward.`
-                          : "No open findings in the pages checked. Keep checking as your website grows."}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="health-footer">
-                    <span>
-                      {previous
-                        ? `${audit.score - previous.score >= 0 ? "+" : ""}${audit.score - previous.score} points since your last audit`
-                        : "Your first benchmark. Let’s grow from here."}
-                    </span>
-                    <button onClick={() => navigate("Website audit")}>
-                      Explore audit <ArrowRight size={15} />
-                    </button>
-                  </div>
-                </section>
-                <section className="next-card">
-                  <div className="card-kicker">
-                    <Sparkles size={16} /> YOUR NEXT BEST STEP
-                  </div>
-                  <h2>
-                    {remaining[0]?.title ?? "Keep your website moving forward"}
-                  </h2>
-                  <p>
-                    {remaining[0]?.why ??
-                      "Run a fresh audit after your next website update to catch any new issues."}
-                  </p>
-                  <div className="next-footer">
-                    <span>{remaining[0]?.effort ?? "A few minutes"}</span>
-                    <button
-                      onClick={() =>
-                        remaining[0] ? setDetail(remaining[0]) : openScan()
-                      }
-                    >
-                      Let’s do this <ArrowUpRight size={17} />
-                    </button>
-                  </div>
-                  <div className="next-decoration" aria-hidden="true">
-                    ↗
-                  </div>
-                </section>
-              </div>
-              <div className="metrics">
-                <div className="metric">
-                  <span>
-                    <Globe2 size={17} />
-                    Pages checked
-                  </span>
-                  <strong>
-                    {audit.pages.length}
-                    <small> / {audit.limit} max</small>
-                  </strong>
-                  <p>
-                    {audit.coverage?.partial
-                      ? "Partial crawl · review coverage"
-                      : "Discovered website pages checked"}
-                  </p>
-                </div>
-                <div className="metric">
-                  <span>
-                    <ClipboardList size={17} />
-                    Open improvements
-                  </span>
-                  <strong>
-                    {remaining.length}
-                    <small> action groups</small>
-                  </strong>
-                  <p>
-                    {audit.findings.filter((f) => f.severity === "high").length}{" "}
-                    high-priority findings
-                  </p>
-                </div>
-                <div className="metric">
-                  <span>
-                    <CheckCheck size={17} />
-                    Actions marked done
-                  </span>
-                  <strong>
-                    {audit.completed.length}
-                    <small> / {audit.findings.length}</small>
-                  </strong>
-                  <p>Re-run to verify your changes</p>
-                </div>
-                <div className="metric">
-                  <span>
-                    <BarChart3 size={17} />
-                    Search performance
-                  </span>
-                  <strong className="not-connected">
-                    {metrics?.searchConsole
-                      ? `${metrics.searchConsole.summary.rows?.[0]?.clicks ?? 0} clicks`
-                      : "Connect Google"}
-                  </strong>
-                  <button onClick={() => navigate("Connections")}>
-                    View connected data <ArrowUpRight size={14} />
-                  </button>
-                </div>
-              </div>
-              <div className="lower-grid">
-                <section className="card action-card">
-                  <div className="section-head">
-                    <div>
-                      <h2>A few things worth your attention</h2>
-                      <p>The next steps with the clearest benefit.</p>
-                    </div>
-                    <button
-                      className="text-button"
-                      onClick={() => navigate("Action plan")}
-                    >
-                      View action plan <ArrowRight size={15} />
-                    </button>
-                  </div>
-                  <div className="issue-list">
-                    {remaining.slice(0, 3).map((f, i) => (
-                      <IssueRow key={f.id} finding={f} index={i} />
-                    ))}
-                    {!remaining.length && (
-                      <Empty
-                        icon={CheckCheck}
-                        title="Your action list is clear"
-                        body="Run another audit to verify your changes and find anything new."
-                      />
-                    )}
-                  </div>
-                  <div className="card-bottom">
-                    <Leaf size={15} />
-                    <span>
-                      You don’t need to fix everything today. Start with one.
-                    </span>
-                  </div>
-                </section>
-                <section className="card growth-card">
-                  <span className="tiny-label">BEYOND THE BASICS</span>
-                  <div className="content-art" aria-hidden="true">
-                    <div className="paper">
-                      <i />
-                      <i />
-                      <i />
-                      <div />
-                      <i />
-                      <i />
-                    </div>
-                    <span>
-                      <Sparkles size={26} />
-                    </span>
-                  </div>
-                  <h2>
-                    Your expertise deserves
-                    <br />
-                    to be discovered.
-                  </h2>
-                  <p>
-                    Build a useful content brief around the questions your
-                    customers ask.
-                  </p>
-                  <button
-                    className="text-button"
-                    onClick={() => navigate("Content studio")}
-                  >
-                    Open content studio <ArrowUpRight size={17} />
-                  </button>
-                </section>
-              </div>
-            </>
+          {section === "Overview" && (
+            <Monitoring
+              project={project}
+              account={account}
+              audits={audits}
+              navigate={navigate}
+            />
           )}
           {section === "Action plan" && hasAudit && (
             <section className="card">

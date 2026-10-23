@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { db, ownedProject } from "./database";
+import { ranksReady } from "./rank-monitor";
 import {
   validCountry,
   seoDomain,
   dailyUserLimit,
-  researchReady,
   backlinksReady,
 } from "./seo-provider";
 import type {
@@ -15,9 +15,12 @@ import type {
 } from "../src/seo-types";
 export const keywordLimit = 50,
   competitorLimit = 5;
-export async function capabilities(owner: string): Promise<SeoCapabilities> {
+export async function capabilities(
+  owner: string,
+  project?: string,
+): Promise<SeoCapabilities> {
   return {
-    configured: researchReady(),
+    configured: project ? await ranksReady(owner, project) : false,
     backlinksConfigured: backlinksReady(),
     keywordLimit,
     competitorLimit,
@@ -71,6 +74,11 @@ export async function listKeywords(
       `SELECT r.* FROM (SELECT *,ROW_NUMBER() OVER(PARTITION BY keyword_id ORDER BY day DESC) AS rn FROM rank_observations WHERE owner_id=?) r JOIN tracked_keywords k ON k.id=r.keyword_id WHERE k.project_id=? AND r.rn<=2 ORDER BY r.day DESC`,
     )
     .all(owner, project);
+  const positions = await db
+    .prepare(
+      `SELECT p.* FROM (SELECT r.*,ROW_NUMBER() OVER(PARTITION BY r.keyword_id ORDER BY r.day DESC) rn FROM search_positions r JOIN connections c ON c.project_id=r.project_id AND c.owner_id=r.owner_id AND c.revision=r.revision WHERE r.owner_id=? AND r.project_id=?) p WHERE rn<=2 ORDER BY day DESC`,
+    )
+    .all(owner, project);
   return rows.map((r) => {
     const h = observations
       .filter((o) => o.keyword_id === r.id)
@@ -91,6 +99,15 @@ export async function listKeywords(
       createdAt: r.created_at,
       latest: h[0] ?? null,
       previous: h[1] ?? null,
+      positions: positions
+        .filter((o) => o.keyword_id === r.id)
+        .map((o) => ({
+          day: o.day,
+          position: o.position,
+          clicks: o.clicks,
+          impressions: o.impressions,
+          checkedAt: o.checked_at,
+        })),
     };
   });
 }

@@ -9,6 +9,7 @@ import type {
   CollectedLink,
   CollectedPage,
   CollectionPage,
+  DiscoveryCandidate,
 } from "../src/collection-types";
 
 // Project-private evidence collected by Zoomi. Customer analytics are never
@@ -297,8 +298,55 @@ export async function collectionState(owner: string, project: string) {
     jobs: jobs.map(jobView),
     pages: Number(stats.n),
     links: links.total,
+    missingLinks: (await collectedLinks(owner, project, "missing", 0)).total,
     lastSeen: stats.last,
     pageLimit: limits.pages,
     monthlyCrawls: limits.crawlsPerMonth,
+    candidates: await discoveryCandidates(owner, project),
   };
+}
+
+export async function discoveryCandidates(
+  owner: string,
+  project: string,
+): Promise<DiscoveryCandidate[]> {
+  const saved = await sources(owner, project);
+  const own = saved.find((s) => s.kind === "website")!.domain;
+  // These are leads from observed outgoing links, not verified incoming backlinks.
+  const rows = await db
+    .prepare(
+      `SELECT target_domain AS domain,MIN(target_url) AS url,(array_agg(source_url ORDER BY target_url,source_url))[1] AS "foundOn",COUNT(DISTINCT source_url) AS mentions,MAX(last_seen) AS "lastSeen" FROM collected_links WHERE owner_id=? AND project_id=? AND present=true AND source_domain<>target_domain AND target_domain<>? AND right(target_domain,length(?)+1)<>'.'||? AND target_domain NOT IN (SELECT value FROM jsonb_array_elements_text(?::jsonb)) AND position(chr(63) in target_url)=0 GROUP BY target_domain ORDER BY mentions DESC,MAX(last_seen) DESC,target_domain LIMIT 100`,
+    )
+    .all(
+      owner,
+      project,
+      own,
+      own,
+      own,
+      JSON.stringify(saved.map((s) => s.domain)),
+    );
+  return rows.map((r) => ({ ...r, mentions: Number(r.mentions) }));
+}
+
+export async function nextCollectionSource(owner: string, project: string) {
+  const list = (await sources(owner, project)).filter(
+    (s) => s.kind !== "website",
+  );
+  const attempts = await db
+    .prepare(
+      "SELECT target_url,MAX(created_at) last FROM jobs WHERE owner_id=? AND project_id=? AND purpose='collection' GROUP BY target_url",
+    )
+    .all(owner, project);
+  const last = (domain: string) =>
+    attempts
+      .filter((a) => a.target_url && seoDomain(a.target_url) === domain)
+      .map((a) => a.last as string)
+      .sort()
+      .at(-1) ?? "";
+  // Rotate by attempts, so a robots denial cannot starve all other sources.
+  return list.sort(
+    (a, b) =>
+      last(a.domain).localeCompare(last(b.domain)) ||
+      a.domain.localeCompare(b.domain),
+  )[0];
 }

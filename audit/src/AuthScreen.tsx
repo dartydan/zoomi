@@ -94,15 +94,15 @@ export default function AuthScreen() {
           <ul>
             <li>
               <ShieldCheck />
-              Complete website audits
+              Continuous website monitoring
             </li>
             <li>
               <Leaf />
-              Practical, prioritized improvements
+              Rankings, backlinks and competitor pages
             </li>
             <li>
               <Check />
-              Your search and visitor data, together
+              Changes and priorities in one workspace
             </li>
           </ul>
         </div>

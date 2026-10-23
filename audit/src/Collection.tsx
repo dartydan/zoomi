@@ -335,6 +335,62 @@ export default function Collection({
           </p>
         )}
       </section>
+      {view === "links" && (
+        <section className="card">
+          <div className="section-head">
+            <div>
+              <h2>Discover more sources</h2>
+              <p>
+                Outside websites linked from pages in your collection. Save a
+                source to check for incoming links, then revisit it through
+                Automation.
+              </p>
+            </div>
+          </div>
+          <ResultTable
+            rows={state?.candidates ?? []}
+            headers={[
+              "Suggested source",
+              "Found on",
+              "Pages mentioning it",
+              "Next step",
+            ]}
+            render={(c) => (
+              <tr key={c.domain}>
+                <td>
+                  <WebLink url={c.url}>{c.domain}</WebLink>
+                  <small>Unverified source suggestion</small>
+                </td>
+                <td>
+                  <WebLink url={c.foundOn} />
+                </td>
+                <td>{c.mentions}</td>
+                <td>
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(() =>
+                        api(base + "/collection/sources", {
+                          method: "POST",
+                          body: JSON.stringify({ url: c.url }),
+                        }),
+                      )
+                    }
+                  >
+                    Save source
+                  </button>
+                </td>
+              </tr>
+            )}
+          />
+          <p className="seo-caption">
+            Up to 100 suggestions from observed links. A mention does not prove
+            this website links back to you. Saved sources join the rotation when
+            source monitoring is enabled.
+          </p>
+        </section>
+      )}
       <section className="card">
         <div className="section-head">
           <div>

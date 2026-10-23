@@ -5,8 +5,9 @@ import { enqueue } from "./jobs";
 import { limits } from "./config";
 import { nextOccurrence, validRecurrence, type Recurrence } from "./recurrence";
 import { enqueueSeo } from "./seo-jobs";
-import { researchReady } from "./seo-provider";
-export type ScheduleKind = "audit" | "google" | "ranks";
+import { ranksReady, rankConnectionNeeded } from "./rank-monitor";
+import { nextCollectionSource } from "./collection";
+export type ScheduleKind = "audit" | "google" | "ranks" | "collection";
 interface Schedule extends Recurrence {
   project_id: string;
   owner_id: string;
@@ -35,7 +36,28 @@ export async function listSchedules(owner: string, project: string) {
       "SELECT * FROM schedules WHERE owner_id=? AND project_id=? ORDER BY kind",
     )
     .all(owner, project)) as Schedule[];
-  return rows.map(scheduleView);
+  return Promise.all(
+    rows.map(async (row) => {
+      if (
+        ["audit", "collection"].includes(row.kind) &&
+        row.last_run_at &&
+        row.last_status !== "waiting"
+      ) {
+        const job = await db
+          .prepare(
+            "SELECT status,error FROM jobs WHERE owner_id=? AND project_id=? AND purpose=? AND created_at=? ORDER BY id LIMIT 1",
+          )
+          .get(owner, project, row.kind, row.last_run_at);
+        if (job)
+          return scheduleView({
+            ...row,
+            last_status: job.status,
+            last_error: job.error,
+          });
+      }
+      return scheduleView(row);
+    }),
+  );
 }
 export async function saveSchedule(
   owner: string,
@@ -44,7 +66,7 @@ export async function saveSchedule(
   input: unknown,
   now = new Date(),
 ) {
-  if (!["audit", "google", "ranks"].includes(kind))
+  if (!["audit", "google", "ranks", "collection"].includes(kind))
     throw new Error("Unknown schedule.");
   const values = validRecurrence(input);
   const pageLimit = Number(
@@ -118,14 +140,20 @@ export async function queueDueSchedules(now = new Date()) {
       let reason = "";
       let retryAt = new Date(now.getTime() + 86400000).toISOString();
       if (!p) return;
+      const source =
+        s.kind === "collection"
+          ? await nextCollectionSource(s.owner_id, p.id)
+          : undefined;
       if (!(await entitled(s.owner_id)))
         reason =
           "An active subscription is needed. We will check again tomorrow.";
-      else if ((s.kind === "audit" || s.kind === "ranks") && !p.verified_at)
+      else if (s.kind !== "google" && !p.verified_at)
         reason = "Verify this website before its scheduled checks can run.";
-      else if (s.kind === "ranks" && !researchReady())
+      else if (s.kind === "ranks" && !(await ranksReady(s.owner_id, p.id)))
+        reason = rankConnectionNeeded;
+      else if (s.kind === "collection" && !source)
         reason =
-          "Direct search-result collection is not active yet. Your schedule is saved but no rank check was run.";
+          "Save a backlink source or competitor website before starting source monitoring.";
       else if (
         s.kind === "ranks" &&
         !(await db
@@ -149,7 +177,7 @@ export async function queueDueSchedules(now = new Date()) {
       let id: string | undefined;
       let queuedStatus = "queued";
       if (!reason) {
-        if (s.kind === "audit") {
+        if (s.kind === "audit" || s.kind === "collection") {
           if (
             await db
               .prepare(
@@ -162,7 +190,9 @@ export async function queueDueSchedules(now = new Date()) {
           } else {
             // enqueue uses the same owner lock for scheduled and manual quotas.
             try {
-              id = (await enqueue(s.owner_id, p, s.page_limit, now)).id;
+              id = (
+                await enqueue(s.owner_id, p, s.page_limit, now, source?.domain)
+              ).id;
             } catch (error) {
               if (
                 !(error instanceof Error) ||
@@ -237,7 +267,7 @@ export async function queueDueSchedules(now = new Date()) {
       return id ? { id, kind: s.kind } : undefined;
     }, `jobs:${row.owner_id}`)();
     if (queued)
-      (queued.kind === "audit"
+      (queued.kind === "audit" || queued.kind === "collection"
         ? result.audits
         : queued.kind === "ranks"
           ? result.research

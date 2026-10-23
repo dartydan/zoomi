@@ -209,3 +209,110 @@ test("host leases serialize different customer crawls and inactive subscriptions
   );
   assert.equal(calls, 0);
 });
+
+test("discovery suggestions retain observed provenance, exclude saved/internal sources and never invent backlinks", async () => {
+  const p = await fixture("suggestions");
+  await collection.saveSource(p.id, p.id, "https://saved.com/");
+  const pages = [
+    analyzePage(
+      '<a href="https://new-source.com/z">New</a><a href="https://saved.com/">Saved</a><a href="https://blog.example.com/">Internal</a><a href="https://query.com/?secret=1">Query</a>',
+      "https://example.com/page",
+    ),
+    analyzePage(
+      '<a href="https://new-source.com/a">New</a>',
+      "https://rival.com/article",
+    ),
+  ];
+  await db.transaction(() => collection.indexPages(p.id, p.id, pages))();
+  const suggestions = await collection.discoveryCandidates(p.id, p.id);
+  assert.equal(suggestions.length, 1);
+  assert.equal(suggestions[0].domain, "new-source.com");
+  assert.equal(suggestions[0].url, "https://new-source.com/a");
+  assert.equal(suggestions[0].foundOn, "https://rival.com/article");
+  assert.equal(suggestions[0].mentions, 2);
+  assert.equal(
+    (await collection.collectedLinks(p.id, p.id, "present", 0)).total,
+    0,
+  );
+  await assert.rejects(
+    () => collection.discoveryCandidates("other", p.id),
+    /not found/,
+  );
+  await collection.saveSource(p.id, p.id, suggestions[0].url);
+  assert.equal((await collection.discoveryCandidates(p.id, p.id)).length, 0);
+});
+
+test("recurring source collection rotates by attempts, respects shared quotas, and does not crawl when paused", async () => {
+  const { saveSchedule, queueDueSchedules, listSchedules } = await import(
+    "../server/schedules"
+  );
+  const p = await fixture("rotation");
+  await collection.saveSource(p.id, p.id, "https://a-source.com/");
+  await collection.saveSource(p.id, p.id, "https://b-source.com/");
+  const recurrence = {
+    frequency: "daily",
+    timezone: "UTC",
+    hour: 9,
+    weekday: 1,
+    pageLimit: 100,
+  };
+  await saveSchedule(
+    p.id,
+    p.id,
+    "collection",
+    recurrence,
+    new Date("2026-10-20T08:00:00Z"),
+  );
+  const first = await queueDueSchedules(new Date("2026-10-20T09:00:00Z"));
+  assert.equal(first.audits.length, 1);
+  assert.equal(
+    (
+      await db
+        .prepare("SELECT target_url FROM jobs WHERE id=?")
+        .get(first.audits[0])
+    ).target_url,
+    "https://a-source.com/",
+  );
+  await db
+    .prepare("UPDATE jobs SET status='failed' WHERE id=?")
+    .run(first.audits[0]);
+  const second = await queueDueSchedules(new Date("2026-10-21T09:00:00Z"));
+  assert.equal(second.audits.length, 1);
+  assert.equal(
+    (
+      await db
+        .prepare("SELECT target_url FROM jobs WHERE id=?")
+        .get(second.audits[0])
+    ).target_url,
+    "https://b-source.com/",
+  );
+  await db
+    .prepare("UPDATE jobs SET status='complete' WHERE id=?")
+    .run(second.audits[0]);
+  assert.equal((await listSchedules(p.id, p.id))[0].status, "complete");
+  for (let i = 0; i < 28; i++)
+    await db
+      .prepare(
+        "INSERT INTO jobs(id,project_id,owner_id,status,page_limit,created_at,updated_at) VALUES(?,?,?,'complete',100,?,?)",
+      )
+      .run(
+        `quota-${i}`,
+        p.id,
+        p.id,
+        "2026-10-21T10:00:00Z",
+        "2026-10-21T10:00:00Z",
+      );
+  assert.equal(
+    (await queueDueSchedules(new Date("2026-10-22T09:00:00Z"))).audits.length,
+    0,
+  );
+  assert.match((await listSchedules(p.id, p.id))[0].error!, /allowance/);
+  await saveSchedule(p.id, p.id, "collection", {
+    ...recurrence,
+    frequency: "off",
+  });
+  assert.equal(
+    (await queueDueSchedules(new Date("2026-11-01T09:00:00Z"))).audits.length,
+    0,
+  );
+});

@@ -227,7 +227,12 @@ app.get("/api/projects/:projectId/schedules", async (_req, res) =>
 );
 app.put("/api/projects/:projectId/schedules/:kind", async (req, res) => {
   const kind = String(req.params.kind);
-  if (kind !== "audit" && kind !== "google" && kind !== "ranks")
+  if (
+    kind !== "audit" &&
+    kind !== "google" &&
+    kind !== "ranks" &&
+    kind !== "collection"
+  )
     return res.status(400).json({ error: "Unknown schedule." });
   res.json(
     await saveSchedule(

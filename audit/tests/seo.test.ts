@@ -283,7 +283,7 @@ test("legacy search jobs cannot send requests and saved rank preferences remain 
   const id = await seo.saveKeyword(p.id, p.id, keyword);
   await assert.rejects(
     () => jobs.enqueueSeo(p.id, p, "ranks"),
-    /collects its own/,
+    /Search Console/,
   );
   await assert.rejects(() => jobs.enqueueSeo("other", p, "ranks"), /not found/);
   const stamp = new Date().toISOString();
@@ -322,8 +322,5 @@ test("rank schedules explain unavailable collection without admitting provider w
     (await queueDueSchedules(new Date("2026-10-20T09:00:00Z"))).research.length,
     0,
   );
-  assert.match(
-    (await listSchedules(p.id, p.id))[0].error!,
-    /Direct search-result collection/,
-  );
+  assert.match((await listSchedules(p.id, p.id))[0].error!, /Search Console/);
 });

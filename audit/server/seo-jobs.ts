@@ -2,6 +2,7 @@ import { db, ownedProject, type ProjectRow } from "./database";
 import { entitled } from "./billing";
 import { collectionPending, type ProviderTransport } from "./seo-provider";
 import type { SeoJob, SeoKind } from "../src/seo-types";
+import { enqueueRanks, runRankStep, rankSource } from "./rank-monitor";
 interface Row {
   id: string;
   owner_id: string;
@@ -63,7 +64,7 @@ export function validKind(value: unknown): SeoKind {
     throw new Error("Choose a supported research type.");
   return value as SeoKind;
 }
-// Legacy reports remain readable, but no new aggregator jobs are admitted.
+// Legacy reports remain readable. New rank jobs use the owner's Google property.
 export async function enqueueSeo(
   owner: string,
   project: ProjectRow,
@@ -75,12 +76,21 @@ export async function enqueueSeo(
     throw new Error("Website not found.");
   if (!(await entitled(owner)))
     throw new Error("An active subscription is needed to run search research.");
+  if (_kind === "ranks") {
+    const id = await enqueueRanks(owner, project, _now);
+    return (await getSeoJob(owner, project.id, id))!;
+  }
   throw new Error(collectionPending);
 }
 export async function runSeoStep(
   id: string,
   _send?: ProviderTransport,
 ): Promise<"more" | "busy" | "done"> {
+  const row = await db
+    .prepare("SELECT kind,params FROM seo_jobs WHERE id=?")
+    .get(id);
+  if (row?.kind === "ranks" && JSON.parse(row.params).source === rankSource)
+    return runRankStep(id);
   await failSeo(id, collectionPending);
   return "done";
 }

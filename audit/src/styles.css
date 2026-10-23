@@ -2898,3 +2898,90 @@ form select {
     gap: 8px;
   }
 }
+
+.monitoring-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: #eef3eb;
+}
+.monitoring-hero p {
+  max-width: 670px;
+}
+.monitoring-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.monitoring-metrics button {
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.monitoring-metrics strong {
+  display: block;
+  font-size: clamp(20px, 2.3vw, 34px);
+  margin: 15px 0;
+}
+.monitoring-metrics small {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.monitoring-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+.monitoring-columns small {
+  display: block;
+  color: #697567;
+  margin-top: 5px;
+}
+.monitoring-schedule {
+  padding: 14px 0;
+  border-bottom: 1px solid #e7ece4;
+}
+.monitoring-schedule span {
+  display: block;
+  margin-top: 6px;
+}
+@media (max-width: 1050px) {
+  .monitoring-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .monitoring-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .monitoring-columns {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-height: 900px) {
+  .sidebar {
+    padding-top: 20px;
+  }
+  .sidebar .brand {
+    margin-bottom: 22px;
+  }
+  .sidebar .site-switcher {
+    margin-bottom: 16px;
+  }
+  .sidebar .growth-note {
+    display: none;
+  }
+  .sidebar-bottom {
+    padding-top: 12px;
+  }
+  .sidebar .nav-item {
+    padding: 10px 12px;
+  }
+  .sidebar nav {
+    gap: 2px;
+  }
+}

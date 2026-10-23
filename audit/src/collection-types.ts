@@ -29,13 +29,22 @@ export interface CollectedPage {
   lastSeen: string;
 }
 export interface CollectionState {
+  candidates: DiscoveryCandidate[];
   sources: CollectionSource[];
   jobs: (Job & { targetUrl: string | null; purpose: string })[];
   pages: number;
   links: number;
+  missingLinks: number;
   lastSeen: string | null;
   pageLimit: number;
   monthlyCrawls: number;
+}
+export interface DiscoveryCandidate {
+  domain: string;
+  url: string;
+  foundOn: string;
+  mentions: number;
+  lastSeen: string;
 }
 export interface CollectionPage<T> {
   items: T[];

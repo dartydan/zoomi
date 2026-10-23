@@ -165,10 +165,9 @@ export function ResearchStatus({
       )}
       {cap && !(backlinks ? cap.backlinksConfigured : cap.configured) && (
         <div className="configuration-note">
-          Audit collects its own data. Direct search-result collection is not
-          active yet, so new rank checks are unavailable. Your keyword list and
-          saved history remain available. Backlinks and Competitors use our
-          website crawler.
+          Connect a matching Google Search Console property in Connections to
+          monitor daily average positions. Audit stores your private history and
+          collects backlink evidence with its own crawler.
         </div>
       )}
       {!project.verifiedAt && (
@@ -179,10 +178,9 @@ export function ResearchStatus({
       )}
       {cap?.configured && (
         <p className="seo-caption">
-          {cap.requestsUsed} / {cap.dailyRequests} search-data requests used
-          today across your websites. Rank checks use one per keyword; backlink
-          reports use four; competitor profiles use six. Allowance resets at
-          midnight UTC.
+          Refresh up to 50 active keywords once per day. Each refresh collects
+          the latest 28 finalized reporting days, ending three days ago. Enable
+          automatic refreshes in Automation.
         </p>
       )}
       {state.reports.length > 0 && (

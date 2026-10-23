@@ -1,10 +1,20 @@
 import { Router } from "express";
 import * as seo from "./seo";
 import * as jobs from "./seo-jobs";
+import { positionHistory } from "./rank-monitor";
 export const seoRoutes = Router();
 // Mounted only after authentication and the project ownership middleware.
 seoRoutes.get("/seo/capabilities", async (_req, res) =>
-  res.json(await seo.capabilities(res.locals.user.id)),
+  res.json(await seo.capabilities(res.locals.user.id, res.locals.project.id)),
+);
+seoRoutes.get("/keywords/:id/positions", async (req, res) =>
+  res.json(
+    await positionHistory(
+      res.locals.user.id,
+      res.locals.project.id,
+      String(req.params.id),
+    ),
+  ),
 );
 seoRoutes.get("/keywords", async (_req, res) =>
   res.json(await seo.listKeywords(res.locals.user.id, res.locals.project.id)),

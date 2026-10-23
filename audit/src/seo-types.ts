@@ -15,6 +15,14 @@ export interface TrackedKeyword {
   createdAt: string;
   latest: RankObservation | null;
   previous: RankObservation | null;
+  positions: SearchPosition[];
+}
+export interface SearchPosition {
+  day: string;
+  position: number | null;
+  clicks: number | null;
+  impressions: number | null;
+  checkedAt: string;
 }
 export interface RankData {
   position: number | null;
@@ -128,8 +136,18 @@ export interface SeoJob {
   id: string;
   kind: SeoKind;
   status:
-    "queued" | "running" | "complete" | "partial" | "failed" | "cancelled";
-  params: { country?: string; competitor?: string; day: string };
+    | "queued"
+    | "running"
+    | "complete"
+    | "partial"
+    | "failed"
+    | "cancelled";
+  params: {
+    country?: string;
+    competitor?: string;
+    day: string;
+    source?: string;
+  };
   total: number;
   done: number;
   error: string | null;
